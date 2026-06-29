@@ -15,27 +15,45 @@ export default function DashboardPage() {
   const [club, setClub] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) {
-          setUser(authUser);
-          
-          // Traer datos del club
-          const response = await fetch(`/api/user/club?userId=${authUser.id}`);
-          const result = await response.json();
-          if (response.ok && result.success) {
-            setClub(result.club);
+  // Estado para guardar las métricas calculadas
+  const [statsData, setStatsData] = useState({
+    peopleCount: 0,
+    disciplinesCount: 0,
+    matchesCount: 0,
+    pendingApplicationsCount: 0,
+  });
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        setUser(authUser);
+        
+        // Traer datos del club
+        const response = await fetch(`/api/user/club?userId=${authUser.id}`);
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          const activeClub = result.club;
+          setClub(activeClub);
+
+          // Cargar estadísticas calculadas en tiempo real
+          const statsRes = await fetch(`/api/dashboard/stats?clubId=${activeClub.id}`);
+          const statsResult = await statsRes.json();
+          if (statsRes.ok && statsResult.success) {
+            setStatsData(statsResult.data);
           }
         }
-      } catch (err) {
-        console.error("Error al cargar datos del usuario:", err);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Error al cargar datos del usuario:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUserData();
   }, []);
 
@@ -47,40 +65,36 @@ export default function DashboardPage() {
     );
   }
 
-  // Métricas mockeadas para la V1 inicial (se dinamizarán más adelante)
+  // Generar las métricas dinámicas basadas en los datos provistos por la API
   const stats = [
     {
-      name: "Socios Registrados",
-      value: "0",
-      change: "Fase 2",
-      changeType: "neutral",
+      name: "Socios & Deportistas",
+      value: statsData.peopleCount.toString(),
+      statusText: "Activos en el padrón",
       icon: Users,
       color: "from-blue-600/20 to-blue-900/10 border-blue-900/50",
       iconColor: "text-blue-500",
     },
     {
       name: "Disciplinas Activas",
-      value: "0",
-      change: "Fase 1",
-      changeType: "neutral",
+      value: statsData.disciplinesCount.toString(),
+      statusText: "Deportes federados",
       icon: Trophy,
       color: "from-amber-600/20 to-amber-900/10 border-amber-900/50",
       iconColor: "text-amber-500",
     },
     {
       name: "Partidos este Mes",
-      value: "0",
-      change: "Fase 1",
-      changeType: "neutral",
+      value: statsData.matchesCount.toString(),
+      statusText: "Disputados / Agendados",
       icon: Calendar,
       color: "from-emerald-600/20 to-emerald-900/10 border-emerald-900/50",
       iconColor: "text-emerald-500",
     },
     {
-      name: "Solicitudes Pendientes",
-      value: "0",
-      change: "Fase 1",
-      changeType: "neutral",
+      name: "Preinscripciones",
+      value: statsData.pendingApplicationsCount.toString(),
+      statusText: "Solicitudes pendientes",
       icon: UserPlus,
       color: "from-pink-600/20 to-pink-900/10 border-pink-900/50",
       iconColor: "text-pink-500",
@@ -123,9 +137,9 @@ export default function DashboardPage() {
             </div>
             
             <div className="flex justify-between items-center text-xs border-t border-slate-800/60 pt-3 mt-3">
-              <span className="text-slate-500">Módulo del sistema</span>
-              <span className="font-bold text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded border border-blue-900/30">
-                {stat.change}
+              <span className="text-slate-500">Estado</span>
+              <span className="font-bold text-slate-350">
+                {stat.statusText}
               </span>
             </div>
           </div>
@@ -141,7 +155,7 @@ export default function DashboardPage() {
             {[
               { text: "Completa la configuración visual y colores en Identidad", href: "/dashboard/profile" },
               { text: "Crea tus primeras Disciplinas deportivas", href: "/dashboard/sports" },
-              { text: "Publica una noticia institucional en Prensa", href: "/dashboard/media" },
+              { text: "Publica una noticia o galería en Prensa", href: "/dashboard/media" },
             ].map((item, index) => (
               <li key={index} className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800/50 hover:border-blue-900/40 transition-colors group">
                 <span className="text-sm text-slate-300">{item.text}</span>
