@@ -183,7 +183,7 @@ export default async function ClubPublicPage({ params }: ClubPublicPageProps) {
                       {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString("es-AR") : ""}
                     </span>
                     <Link
-                      href={`/news`}
+                      href={`/news?newsId=${item.id}`}
                       className="font-bold text-[var(--primary-club)] hover:underline inline-flex items-center"
                     >
                       Leer Más <ArrowRight className="h-3.5 w-3.5 ml-0.5" />

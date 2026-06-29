@@ -86,6 +86,12 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
               Inicio
             </Link>
             <Link 
+              href={`/about`}
+              className="font-semibold text-sm text-slate-600 hover:text-[var(--primary-club)] transition-colors"
+            >
+              Institucional
+            </Link>
+            <Link 
               href={`/sports`}
               className="font-semibold text-sm text-slate-600 hover:text-[var(--primary-club)] transition-colors"
             >
@@ -175,6 +181,9 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
             <div className="grid grid-cols-1 gap-2 text-xs font-semibold">
               <Link href={`/`} className="hover:text-white transition-colors flex items-center">
                 <ChevronRight className="h-3 w-3 mr-1 text-slate-600" /> Portada
+              </Link>
+              <Link href={`/about`} className="hover:text-white transition-colors flex items-center">
+                <ChevronRight className="h-3 w-3 mr-1 text-slate-600" /> Institucional
               </Link>
               <Link href={`/sports`} className="hover:text-white transition-colors flex items-center">
                 <ChevronRight className="h-3 w-3 mr-1 text-slate-600" /> Disciplinas

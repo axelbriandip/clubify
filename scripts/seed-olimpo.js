@@ -511,7 +511,46 @@ async function main() {
   });
   console.log("✅ Álbumes de fotos creados.");
 
-  // 11. Crear Mensajes de Contacto y Suscriptores mock
+  // 12. Crear Instalaciones
+  console.log("Cargando instalaciones del club...");
+  await prisma.facility.create({
+    data: {
+      clubId,
+      name: "Estadio Roberto Carminatti",
+      description: "Estadio principal de fútbol con capacidad para 15.000 espectadores y cabinas de transmisión de prensa de última generación.",
+      address: "Colón y Ángel Brunel, Bahía Blanca",
+      imageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80",
+      sortOrder: 1,
+      isActive: true,
+    }
+  });
+
+  await prisma.facility.create({
+    data: {
+      clubId,
+      name: "Gimnasio Centenario",
+      description: "Microestadio cubierto climatizado con capacidad para 1.500 espectadores, destinado a básquetbol, vóley y patín artístico.",
+      address: "Sarmiento 52, Bahía Blanca",
+      imageUrl: "https://images.unsplash.com/photo-1544698310-74ea9d1c8258?w=800&auto=format&fit=crop&q=80",
+      sortOrder: 2,
+      isActive: true,
+    }
+  });
+
+  await prisma.facility.create({
+    data: {
+      clubId,
+      name: "Complejo Las Tres Villas",
+      description: "Predio polideportivo de alto rendimiento para entrenamientos de planteles formativos, dotado de vestuarios y departamentos médicos.",
+      address: "Agustín de Arrieta 1000, Bahía Blanca",
+      imageUrl: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&auto=format&fit=crop&q=80",
+      sortOrder: 3,
+      isActive: true,
+    }
+  });
+  console.log("✅ Instalaciones creadas.");
+
+  // 13. Crear Mensajes de Contacto y Suscriptores mock
   console.log("Cargando mensajes de consulta y correos...");
   
   await prisma.contactSubmission.create({
