@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex">
       {/* ---------------- SIDEBAR DE DESKTOP ---------------- */}
-      <aside className="hidden md:flex md:w-64 md:flex-col bg-slate-900 border-r border-slate-800 shrink-0">
+      <aside className="hidden md:!flex md:w-64 md:flex-col bg-slate-900 border-r border-slate-800 shrink-0">
         {/* Cabecera del Sidebar */}
         <div className="h-16 flex items-center px-6 border-b border-slate-800 bg-slate-950">
           <span className="font-extrabold text-lg text-white uppercase tracking-wider truncate">
