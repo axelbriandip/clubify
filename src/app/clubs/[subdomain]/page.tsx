@@ -2,6 +2,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { Calendar, Clock, MapPin, Trophy, Newspaper, Heart, Mail, Phone } from "lucide-react";
+import MatchesList from "@/components/MatchesList";
 
 interface ClubPublicPageProps {
   params: Promise<{ subdomain: string }>;
@@ -161,49 +162,11 @@ export default async function ClubPublicPage({ params }: ClubPublicPageProps) {
             Agenda Deportiva
           </h2>
 
-          {club.matches.length === 0 ? (
-            <div className="p-8 bg-slate-50 border border-slate-100 rounded-2xl text-center text-slate-400 text-sm">
-              No hay partidos programados recientemente.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {club.matches.map((match) => (
-                <div key={match.id} className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-3">
-                  <div className="flex justify-between items-center text-[10px] text-slate-500 border-b border-slate-200/60 pb-2">
-                    <span className="font-bold text-[var(--primary-club)]">
-                      {match.category.discipline.name} - {match.category.name}
-                    </span>
-                    <span>
-                      {new Date(match.matchDate).toLocaleDateString("es-AR")}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center text-sm font-bold text-slate-900">
-                    <span className={match.homeTeam.isOwnClub ? "text-[var(--primary-club)]" : ""}>
-                      {match.homeTeam.name}
-                    </span>
-                    {match.status === "FINISHED" ? (
-                      <span className="bg-slate-200 text-slate-800 px-2 py-0.5 rounded text-xs font-black">
-                        {match.homeScore} - {match.awayScore}
-                      </span>
-                    ) : (
-                      <span className="text-[10px] bg-sky-100 text-sky-800 font-bold px-2 py-0.5 rounded uppercase">
-                        vs
-                      </span>
-                    )}
-                    <span className={match.awayTeam.isOwnClub ? "text-[var(--primary-club)]" : ""}>
-                      {match.awayTeam.name}
-                    </span>
-                  </div>
-
-                  <div className="text-[10px] text-slate-500 flex items-center pt-1">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {match.facility ? match.facility.name : (match.customLocationName || "Cancha rival")}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <MatchesList 
+            initialMatches={club.matches} 
+            clubSlug={club.slug} 
+            clubName={club.name} 
+          />
         </div>
       </section>
 
