@@ -4,18 +4,41 @@ import { db } from "@/lib/db";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get("userId");
+  const slug = searchParams.get("slug");
 
-  if (!userId) {
+  if (!userId && !slug) {
     return NextResponse.json(
-      { error: "Falta el ID del usuario en la solicitud" },
+      { error: "Falta el ID del usuario o el slug en la solicitud" },
       { status: 400 }
     );
   }
 
   try {
+    // Si se pasa slug, buscamos directamente el club por su slug de subdominio
+    if (slug) {
+      const club = await db.club.findUnique({
+        where: { slug: slug.toLowerCase().trim() },
+        include: {
+          settings: true,
+        },
+      });
+
+      if (!club) {
+        return NextResponse.json(
+          { error: "No se encontró ningún club con este subdominio" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        club: club,
+      });
+    }
+
     // Buscar la relación del usuario con el club y traer los datos del club y su config visual
     const clubUser = await db.clubUser.findFirst({
-      where: { userId: userId },
+      where: { userId: userId! },
       include: {
         club: {
           include: {
