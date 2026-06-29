@@ -1,0 +1,823 @@
+// Este es tu archivo de esquema Prisma.
+// Más información en la documentación oficial: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==========================================
+// ENUMS (Estados y Opciones predefinidas)
+// ==========================================
+
+enum ClubStatus {
+  PENDING_ACTIVATION
+  ACTIVE
+  SUSPENDED
+  SUSPENDED_FOR_NONPAYMENT
+  ARCHIVED
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  UNPAID
+  CANCELED
+  PAUSED
+}
+
+enum PaymentGateway {
+  STRIPE
+  MERCADOPAGO
+  MANUAL_TRANSFER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  MIXED
+}
+
+enum SponsorTier {
+  PLATINUM
+  GOLD
+  SILVER
+}
+
+enum PreferredSide {
+  LEFT
+  RIGHT
+  AMBIDEXTROUS
+}
+
+enum PlayerCategoryStatus {
+  REGULAR_PLAYER
+  RESERVE_PLAYER
+  INJURED
+  INACTIVE
+}
+
+enum MatchStatus {
+  SCHEDULED
+  PLAYING
+  POSTPONED
+  FINISHED
+  CANCELED
+}
+
+enum MatchEventType {
+  GOAL
+  OWN_GOAL
+  YELLOW_CARD
+  RED_CARD
+  SUBSTITUTION_IN
+  SUBSTITUTION_OUT
+  INJURY
+  PENALTY_SAVED
+  CUSTOM
+}
+
+enum ContactStatus {
+  PENDING
+  READ
+  RESPONDED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ==========================================
+// MÓDULO 1: Core del SaaS y Tenancy
+// ==========================================
+
+model Club {
+  id           String     @id @default(uuid()) @db.Uuid
+  name         String     @db.VarChar(255)
+  slug         String     @unique @db.VarChar(100)
+  customDomain String?    @unique @map("custom_domain") @db.VarChar(255)
+  status       ClubStatus @default(PENDING_ACTIVATION)
+  
+  // Datos de Facturación
+  legalName    String?    @map("legal_name") @db.VarChar(255)
+  taxId        String?    @map("tax_id") @db.VarChar(50)
+  billingEmail String     @map("billing_email") @db.VarChar(255)
+  
+  // Datos de Contacto
+  generalEmail  String?   @map("general_email") @db.VarChar(255)
+  phone         String?   @db.VarChar(50)
+  country       String    @db.VarChar(100)
+  stateProvince String?   @map("state_province") @db.VarChar(100)
+  city          String    @db.VarChar(100)
+  postalCode    String?   @map("postal_code") @db.VarChar(20)
+  
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relaciones
+  settings           ClubSettings?
+  subscriptions      SaasSubscription[]
+  clubUsers          ClubUser[]
+  auditLogs          AuditLog[]
+  heroImages         HeroImage[]
+  sponsors           Sponsor[]
+  facilities         Facility[]
+  people             Person[]
+  boardMembers       BoardMember[]
+  staffMembers       StaffMember[]
+  players            Player[]
+  disciplines        Discipline[]
+  leaguesTournaments LeagueTournament[]
+  teams              Team[]
+  matches            Match[]
+  news               News[]
+  photoAlbums        PhotoAlbum[]
+  contactSubmissions ContactSubmission[]
+  newsletterSubscribers NewsletterSubscriber[]
+  memberApplications   MemberApplication[]
+
+  @@map("clubs")
+}
+
+model SaasSubscription {
+  id         String             @id @default(uuid()) @db.Uuid
+  clubId     String             @map("club_id") @db.Uuid
+  planType   String             @map("plan_type") @db.VarChar(50) // basic_monthly, pro_yearly, etc.
+  status     SubscriptionStatus @default(TRIALING)
+  
+  // Integración Pasarela
+  paymentGateway         PaymentGateway @map("payment_gateway")
+  gatewayCustomerId      String?        @map("gateway_customer_id") @db.VarChar(255)
+  gatewaySubscriptionId  String?        @map("gateway_subscription_id") @db.VarChar(255)
+  
+  // Detalles Cobro
+  priceAmount Decimal @map("price_amount") @db.Decimal(10, 2)
+  currency    String  @db.VarChar(10)
+  
+  // Fechas de Control
+  trialStart          DateTime? @map("trial_start")
+  trialEnd            DateTime? @map("trial_end")
+  currentPeriodStart  DateTime  @map("current_period_start")
+  currentPeriodEnd    DateTime  @map("current_period_end")
+  cancelAtPeriodEnd   Boolean   @default(false) @map("cancel_at_period_end")
+  canceledAt          DateTime? @map("canceled_at")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("saas_subscriptions")
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  personId     String?    @map("person_id") @db.Uuid
+  email        String     @unique @db.VarChar(255)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  firstName    String     @map("first_name") @db.VarChar(100)
+  lastName     String     @map("last_name") @db.VarChar(100)
+  phoneNumber  String?    @map("phone_number") @db.VarChar(50)
+  avatarUrl    String?    @map("avatar_url") @db.VarChar(500)
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?  @map("last_login_at")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  person    Person?    @relation(fields: [personId], references: [id], onDelete: SetNull)
+  clubUsers ClubUser[]
+  auditLogs AuditLog[]
+  news      News[]
+
+  @@map("users")
+}
+
+model ClubUser {
+  id        String   @id @default(uuid()) @db.Uuid
+  clubId    String   @map("club_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  roleId    String   @map("role_id") @db.Uuid
+  isPrimary Boolean  @default(false) @map("is_primary_contact")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@unique([clubId, userId])
+  @@map("club_users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(100) // owner, press_editor, sports_coordinator, member_manager
+  description String?  @db.VarChar(255)
+  permissions Json     // Objeto JSON flexible para control de permisos
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  clubUsers ClubUser[]
+
+  @@map("roles")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  clubId     String   @map("club_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  action     String   @db.VarChar(100) // create_news, delete_match, etc.
+  entityName String   @map("entity_name") @db.VarChar(100) // news, matches, etc.
+  entityId   String?  @map("entity_id") @db.Uuid
+  prevValues Json?    @map("previous_values")
+  newValues  Json?    @map("new_values")
+  ipAddress  String?  @map("ip_address") @db.VarChar(45)
+  userAgent  String?  @map("user_agent") @db.VarChar(500)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+// ==========================================
+// MÓDULO 2: CMS Estático y Personalización
+// ==========================================
+
+model ClubSettings {
+  id           String  @id @default(uuid()) @db.Uuid
+  clubId       String  @unique @map("club_id") @db.Uuid
+  
+  // Identidad Visual
+  logoColorUrl  String  @map("logo_color_url") @db.VarChar(500)
+  logoWhiteUrl  String? @map("logo_white_url") @db.VarChar(500)
+  logoBlackUrl  String? @map("logo_black_url") @db.VarChar(500)
+  faviconUrl    String? @map("favicon_url") @db.VarChar(500)
+  primaryColor  String  @map("primary_color") @db.VarChar(7) // HEX
+  secondaryColor String @map("secondary_color") @db.VarChar(7) // HEX
+  accentColor   String? @map("accent_color") @db.VarChar(7) // HEX
+  fontFamily    String  @map("font_family") @db.VarChar(100)
+  customCss     String? @map("custom_css") @db.Text
+  
+  // Hero Banner Config
+  heroTitle    String? @map("hero_title") @db.VarChar(255)
+  heroSubtitle String? @map("hero_subtitle") @db.VarChar(500)
+  heroCtaText  String? @map("hero_cta_text") @db.VarChar(100)
+  heroCtaLink  String? @map("hero_cta_link") @db.VarChar(500)
+  
+  // Información Visible de Contacto
+  contactEmail       String? @map("contact_email") @db.VarChar(255)
+  contactPhone       String? @map("contact_phone") @db.VarChar(100)
+  whatsappNumber     String? @map("whatsapp_number") @db.VarChar(50)
+  addressText        String? @map("address_text") @db.VarChar(255)
+  googleMapsEmbedUrl String? @map("google_maps_embed_url") @db.Text
+  
+  // Redes Sociales
+  facebookUrl  String? @map("facebook_url") @db.VarChar(500)
+  instagramUrl String? @map("instagram_url") @db.VarChar(500)
+  twitterXUrl  String? @map("twitter_x_url") @db.VarChar(500)
+  youtubeUrl   String? @map("youtube_url") @db.VarChar(500)
+  tiktokUrl    String? @map("tiktok_url") @db.VarChar(500)
+  
+  // SEO Config
+  seoMetaTitle       String? @map("seo_meta_title") @db.VarChar(255)
+  seoMetaDescription String? @map("seo_meta_description") @db.Text
+  seoOgImageUrl      String? @map("seo_og_image_url") @db.VarChar(500)
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("club_settings")
+}
+
+model HeroImage {
+  id        String   @id @default(uuid()) @db.Uuid
+  clubId    String   @map("club_id") @db.Uuid
+  imageUrl  String   @map("image_url") @db.VarChar(500)
+  title     String?  @db.VarChar(255)
+  subtitle  String?  @db.VarChar(500)
+  linkUrl   String?  @map("link_url") @db.VarChar(500)
+  sortOrder Int      @map("sort_order") @db.Integer
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("hero_images")
+}
+
+model Sponsor {
+  id            String      @id @default(uuid()) @db.Uuid
+  clubId        String      @map("club_id") @db.Uuid
+  name          String      @db.VarChar(255)
+  logoColorUrl  String      @map("logo_color_url") @db.VarChar(500)
+  logoWhiteUrl  String?     @map("logo_white_url") @db.VarChar(500)
+  logoBlackUrl  String?     @map("logo_black_url") @db.VarChar(500)
+  websiteUrl    String?     @map("website_url") @db.VarChar(500)
+  tier          SponsorTier @default(SILVER)
+  sortOrder     Int         @map("sort_order") @db.Integer
+  isActive      Boolean     @default(true) @map("is_active")
+  
+  // Métricas
+  totalClicks      Int @default(0) @map("total_clicks") @db.Integer
+  totalImpressions Int @default(0) @map("total_impressions") @db.Integer
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("sponsors")
+}
+
+model Facility {
+  id          String   @id @default(uuid()) @db.Uuid
+  clubId      String   @map("club_id") @db.Uuid
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  address     String   @db.VarChar(255)
+  latitude    Decimal? @db.Decimal(9, 6)
+  longitude   Decimal? @db.Decimal(9, 6)
+  imageUrl    String?  @map("image_url") @db.VarChar(500)
+  sortOrder   Int      @map("sort_order") @db.Integer
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club    Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  matches Match[]
+
+  @@map("facilities")
+}
+
+// ==========================================
+// MÓDULO 3: Estructura Deportiva
+// ==========================================
+
+model Person {
+  id            String   @id @default(uuid()) @db.Uuid
+  clubId        String   @map("club_id") @db.Uuid
+  firstName     String   @map("first_name") @db.VarChar(100)
+  lastName      String   @map("last_name") @db.VarChar(100)
+  nickname      String?  @db.VarChar(100)
+  dateOfBirth   DateTime @map("date_of_birth") @db.Date
+  placeOfBirth  String?  @map("place_of_birth") @db.VarChar(100)
+  nationality   String?  @db.VarChar(100)
+  
+  // Contacto y Emergencia
+  email                  String? @db.VarChar(255)
+  phone                  String? @db.VarChar(50)
+  address                String? @db.VarChar(255)
+  emergencyContactName   String? @map("emergency_contact_name") @db.VarChar(150)
+  emergencyContactPhone  String? @map("emergency_contact_phone") @db.VarChar(50)
+  
+  // Ficha Médica/Social
+  documentId            String?   @map("document_id") @db.VarChar(50)
+  bloodType             String?   @map("blood_type") @db.VarChar(10)
+  medicalClearanceExpiry DateTime? @map("medical_clearance_expiry") @db.Date
+  memberNumber          String?   @map("member_number") @db.VarChar(100)
+  
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club         Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  users        User[]
+  boardMembers BoardMember[]
+  staffMembers StaffMember[]
+  players      Player[]
+  photoTags    PhotoTag[]
+
+  @@map("people")
+}
+
+model BoardMember {
+  id                 String    @id @default(uuid()) @db.Uuid
+  clubId             String    @map("club_id") @db.Uuid
+  personId           String    @map("person_id") @db.Uuid
+  position           String    @db.VarChar(150) // Presidente, Tesorero, etc.
+  termStart          DateTime? @map("term_start") @db.Date
+  termEnd            DateTime? @map("term_end") @db.Date
+  
+  // Fotos del Directivo
+  photoSquareUrl     String? @map("photo_square_url") @db.VarChar(500)
+  photoHorizontalUrl String? @map("photo_horizontal_url") @db.VarChar(500)
+  photoVerticalUrl   String? @map("photo_vertical_url") @db.VarChar(500)
+  
+  sortOrder Int     @map("sort_order") @db.Integer
+  isActive  Boolean @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@map("board_members")
+}
+
+model StaffMember {
+  id                 String  @id @default(uuid()) @db.Uuid
+  clubId             String  @map("club_id") @db.Uuid
+  personId           String  @map("person_id") @db.Uuid
+  mainRole           String  @map("main_role") @db.VarChar(150) // DT, PF, etc.
+  bio                String? @db.Text
+  
+  // Fotos del Staff
+  photoSquareUrl     String? @map("photo_square_url") @db.VarChar(500)
+  photoHorizontalUrl String? @map("photo_horizontal_url") @db.VarChar(500)
+  photoVerticalUrl   String? @map("photo_vertical_url") @db.VarChar(500)
+  
+  isActive  Boolean @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club          Club            @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  person        Person          @relation(fields: [personId], references: [id], onDelete: Cascade)
+  categories    CategoryStaff[]
+
+  @@map("staff_members")
+}
+
+model Player {
+  id                 String        @id @default(uuid()) @db.Uuid
+  clubId             String        @map("club_id") @db.Uuid
+  personId           String        @map("person_id") @db.Uuid
+  
+  // Ficha Deportiva
+  preferredSide      PreferredSide? @map("preferred_foot_hand")
+  heightCm           Int?          @map("height_cm") @db.Integer
+  weightKg           Decimal?      @map("weight_kg") @db.Decimal(5, 2)
+  previousClub       String?       @map("previous_club") @db.VarChar(255)
+  bioDescription     String?       @map("bio_description") @db.Text
+  
+  // Fotos con Camiseta
+  photoSquareUrl     String? @map("photo_square_url") @db.VarChar(500)
+  photoHorizontalUrl String? @map("photo_horizontal_url") @db.VarChar(500)
+  photoVerticalUrl   String? @map("photo_vertical_url") @db.VarChar(500)
+  
+  isActive  Boolean @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club         Club              @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  person       Person            @relation(fields: [personId], references: [id], onDelete: Cascade)
+  categories   PlayerCategory[]
+  matchLineups MatchLineup[]
+  matchEvents  MatchEvent[]
+
+  @@map("players")
+}
+
+model Discipline {
+  id          String   @id @default(uuid()) @db.Uuid
+  clubId      String   @map("club_id") @db.Uuid
+  name        String   @db.VarChar(150) // Fútbol, Básquet, etc.
+  description String?  @db.Text
+  imageUrl    String?  @map("image_url") @db.VarChar(500)
+  slug        String   @db.VarChar(150)
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @map("sort_order") @db.Integer
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club       Club       @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  categories Category[]
+
+  @@unique([clubId, slug])
+  @@map("disciplines")
+}
+
+model Category {
+  id           String   @id @default(uuid()) @db.Uuid
+  disciplineId String   @map("discipline_id") @db.Uuid
+  name         String   @db.VarChar(150) // Sub-17, Primera, etc.
+  ageRange     String?  @map("age_range") @db.VarChar(50)
+  gender       Gender?
+  isActive     Boolean  @default(true) @map("is_active")
+  sortOrder    Int      @map("sort_order") @db.Integer
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  discipline  Discipline      @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  staff       CategoryStaff[]
+  players     PlayerCategory[]
+  matches     Match[]
+  photoTags   PhotoTag[]
+
+  @@map("categories")
+}
+
+model CategoryStaff {
+  id             String   @id @default(uuid()) @db.Uuid
+  categoryId     String   @map("category_id") @db.Uuid
+  staffMemberId  String   @map("staff_member_id") @db.Uuid
+  roleInCategory String?  @map("role_in_category") @db.VarChar(100) // Ayudante, DT Principal
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  staffMember StaffMember @relation(fields: [staffMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, staffMemberId])
+  @@map("category_staff")
+}
+
+model PlayerCategory {
+  id           String               @id @default(uuid()) @db.Uuid
+  playerId     String               @map("player_id") @db.Uuid
+  categoryId   String               @map("category_id") @db.Uuid
+  jerseyNumber Int?                 @map("jersey_number") @db.Integer
+  position     String?              @db.VarChar(100)
+  status       PlayerCategoryStatus @default(REGULAR_PLAYER)
+  createdAt    DateTime             @default(now()) @map("created_at")
+
+  // Relaciones
+  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, categoryId])
+  @@map("player_categories")
+}
+
+// ==========================================
+// MÓDULO 4: Agenda Deportiva y Partidos
+// ==========================================
+
+model LeagueTournament {
+  id          String   @id @default(uuid()) @db.Uuid
+  clubId      String   @map("club_id") @db.Uuid
+  name        String   @db.VarChar(255) // Liga Rosarina, etc.
+  season      String?  @db.VarChar(50)  // 2026
+  description String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club    Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  matches Match[]
+
+  @@map("leagues_tournaments")
+}
+
+model Team {
+  id             String   @id @default(uuid()) @db.Uuid
+  clubId         String   @map("club_id") @db.Uuid
+  name           String   @db.VarChar(255)
+  shortName      String?  @map("short_name") @db.VarChar(50)
+  logoColorUrl   String?  @map("logo_color_url") @db.VarChar(500)
+  logoWhiteUrl   String?  @map("logo_white_url") @db.VarChar(500)
+  logoBlackUrl   String?  @map("logo_black_url") @db.VarChar(500)
+  isOwnClub      Boolean  @default(false) @map("is_own_club")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club        Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  homeMatches Match[] @relation("HomeTeamMatches")
+  awayMatches Match[] @relation("AwayTeamMatches")
+
+  @@map("teams")
+}
+
+model Match {
+  id           String      @id @default(uuid()) @db.Uuid
+  clubId       String      @map("club_id") @db.Uuid
+  categoryId   String      @map("category_id") @db.Uuid
+  tournamentId String?     @map("tournament_id") @db.Uuid
+  homeTeamId   String      @map("home_team_id") @db.Uuid
+  awayTeamId   String      @map("away_team_id") @db.Uuid
+  matchDate    DateTime    @map("match_date") @db.Date
+  matchTime    DateTime?   @map("match_time") @db.Time
+  
+  // Lugar del encuentro
+  facilityId            String? @map("facility_id") @db.Uuid
+  customLocationName    String? @map("custom_location_name") @db.VarChar(255)
+  customLocationAddress String? @map("custom_location_address") @db.VarChar(255)
+  
+  // Resultados
+  status       MatchStatus @default(SCHEDULED)
+  homeScore    Int?        @map("home_score") @db.Integer
+  awayScore    Int?        @map("away_score") @db.Integer
+  matchSummary String?     @map("match_summary") @db.Text
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club       Club              @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  category   Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  tournament LeagueTournament? @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
+  homeTeam   Team              @relation("HomeTeamMatches", fields: [homeTeamId], references: [id], onDelete: Cascade)
+  awayTeam   Team              @relation("AwayTeamMatches", fields: [awayTeamId], references: [id], onDelete: Cascade)
+  facility   Facility?         @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  lineups    MatchLineup[]
+  events     MatchEvent[]
+
+  @@map("matches")
+}
+
+model MatchLineup {
+  id             String   @id @default(uuid()) @db.Uuid
+  matchId        String   @map("match_id") @db.Uuid
+  playerId       String   @map("player_id") @db.Uuid
+  isStarter      Boolean  @default(true) @map("is_starter")
+  jerseyNumber   Int?     @map("jersey_number") @db.Integer
+  positionPlayed String?  @map("position_played") @db.VarChar(100)
+  minutesPlayed  Int?     @map("minutes_played") @db.Integer
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, playerId])
+  @@map("match_lineups")
+}
+
+model MatchEvent {
+  id               String         @id @default(uuid()) @db.Uuid
+  matchId          String         @map("match_id") @db.Uuid
+  playerId         String?        @map("player_id") @db.Uuid
+  rivalPlayerName  String?        @map("rival_player_name") @db.VarChar(150)
+  eventType        MatchEventType @map("event_type")
+  matchMinute      Int?           @map("match_minute") @db.Integer
+  description      String?        @db.VarChar(255)
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  // Relaciones
+  match  Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
+
+  @@map("match_events")
+}
+
+// ==========================================
+// MÓDULO 5: Contenido y Prensa
+// ==========================================
+
+model News {
+  id          String   @id @default(uuid()) @db.Uuid
+  clubId      String   @map("club_id") @db.Uuid
+  authorId    String?  @map("author_id") @db.Uuid
+  title       String   @db.VarChar(255)
+  slug        String   @db.VarChar(255)
+  summary     String?  @db.Text
+  content     String   @db.Text
+  imageUrl    String?  @map("image_url") @db.VarChar(500)
+  category    String?  @db.VarChar(100)
+  isPublished Boolean  @default(false) @map("is_published")
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  author User?  @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@unique([clubId, slug])
+  @@map("news")
+}
+
+model PhotoAlbum {
+  id            String   @id @default(uuid()) @db.Uuid
+  clubId        String   @map("club_id") @db.Uuid
+  title         String   @db.VarChar(255)
+  description   String?  @db.Text
+  coverImageUrl String?  @map("cover_image_url") @db.VarChar(500)
+  isActive      Boolean  @default(true) @map("is_active")
+  sortOrder     Int      @map("sort_order") @db.Integer
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club   Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  photos Photo[]
+
+  @@map("photo_albums")
+}
+
+model Photo {
+  id        String   @id @default(uuid()) @db.Uuid
+  albumId   String   @map("album_id") @db.Uuid
+  imageUrl  String   @map("image_url") @db.VarChar(500)
+  caption   String?  @db.VarChar(255)
+  sortOrder Int      @map("sort_order") @db.Integer
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  album     PhotoAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  photoTags PhotoTag[]
+
+  @@map("photos")
+}
+
+model PhotoTag {
+  id         String   @id @default(uuid()) @db.Uuid
+  photoId    String   @map("photo_id") @db.Uuid
+  personId   String?  @map("person_id") @db.Uuid
+  categoryId String?  @map("category_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relaciones
+  photo    Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  person   Person?   @relation(fields: [personId], references: [id], onDelete: SetNull)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@map("photo_tags")
+}
+
+model ContactSubmission {
+  id        String        @id @default(uuid()) @db.Uuid
+  clubId    String        @map("club_id") @db.Uuid
+  name      String        @db.VarChar(255)
+  email     String        @db.VarChar(255)
+  phone     String?       @db.VarChar(50)
+  subject   String?       @db.VarChar(255)
+  message   String        @db.Text
+  status    ContactStatus @default(PENDING)
+  notes     String?       @db.Text
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  // Relaciones
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("contact_submissions")
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid()) @db.Uuid
+  clubId    String   @map("club_id") @db.Uuid
+  email     String   @db.VarChar(255)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, email])
+  @@map("newsletter_subscribers")
+}
+
+model MemberApplication {
+  id                    String            @id @default(uuid()) @db.Uuid
+  clubId                String            @map("club_id") @db.Uuid
+  firstName             String            @map("first_name") @db.VarChar(100)
+  lastName              String            @map("last_name") @db.VarChar(100)
+  documentId            String            @map("document_id") @db.VarChar(50)
+  dateOfBirth           DateTime          @map("date_of_birth") @db.Date
+  email                 String            @db.VarChar(255)
+  phone                 String            @db.VarChar(50)
+  address               String?           @db.VarChar(255)
+  membershipTierDesired String?           @map("membership_tier_desired") @db.VarChar(100)
+  customFieldsResponses Json?             @map("custom_fields_responses") // Respuestas JSON del Plan Pro
+  status                ApplicationStatus @default(PENDING)
+  rejectionReason       String?           @map("rejection_reason") @db.VarChar(255)
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime          @updatedAt @map("updated_at")
+
+  // Relaciones
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@map("member_applications")
+}
