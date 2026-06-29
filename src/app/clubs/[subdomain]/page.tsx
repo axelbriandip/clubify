@@ -1,9 +1,11 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { Calendar, Clock, MapPin, Trophy, Newspaper, ArrowRight } from "lucide-react";
+import { Calendar, Clock, MapPin, Trophy, Newspaper, ArrowRight, Mail, Phone } from "lucide-react";
 import MatchesList from "@/components/MatchesList";
 import Link from "next/link";
+import ContactForm from "@/components/ContactForm";
+import NewsletterForm from "@/components/NewsletterForm";
 
 interface ClubPublicPageProps {
   params: Promise<{ subdomain: string }>;
@@ -211,6 +213,72 @@ export default async function ClubPublicPage({ params }: ClubPublicPageProps) {
             clubName={club.name} 
           />
         </div>
+      </section>
+      
+      {/* ---------------- SECCIÓN: CONTACTO E INSTALACIONES ---------------- */}
+      <section className="bg-slate-100/50 py-20 border-t border-b border-slate-200/40">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
+          {/* Info de contacto */}
+          <div className="lg:col-span-2 space-y-6">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary-club)]">
+                ¿Tenés consultas?
+              </span>
+              <h2 className="font-outfit font-black text-3xl sm:text-4xl uppercase tracking-tight text-slate-900 mt-1">
+                Contacto Oficial
+              </h2>
+            </div>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Comunicate con la secretaría de nuestra institución para consultas administrativas, aranceles de disciplinas, alquiler de instalaciones o propuestas comerciales.
+            </p>
+            
+            <div className="space-y-4 pt-4 border-t border-slate-200/60">
+              {club.settings?.contactEmail && (
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-full bg-[var(--primary-club)]/10 text-[var(--primary-club)] flex items-center justify-center shrink-0">
+                    <Mail className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-slate-400">Correo Electrónico</span>
+                    <span className="text-sm font-semibold text-slate-800">{club.settings.contactEmail}</span>
+                  </div>
+                </div>
+              )}
+              {club.settings?.contactPhone && (
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-full bg-[var(--primary-club)]/10 text-[var(--primary-club)] flex items-center justify-center shrink-0">
+                    <Phone className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-slate-400">Teléfono Secretaría</span>
+                    <span className="text-sm font-semibold text-slate-800">{club.settings.contactPhone}</span>
+                  </div>
+                </div>
+              )}
+              {club.settings?.addressText && (
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-full bg-[var(--primary-club)]/10 text-[var(--primary-club)] flex items-center justify-center shrink-0">
+                    <MapPin className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] uppercase font-bold text-slate-400">Ubicación Sede Central</span>
+                    <span className="text-sm font-semibold text-slate-800 leading-snug">{club.settings.addressText}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Formulario */}
+          <div className="lg:col-span-3">
+            <ContactForm clubId={club.id} primaryColor={primaryColor} />
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- SECCIÓN: BOLETÍN / NEWSLETTER ---------------- */}
+      <section className="py-20 px-6 border-b border-slate-200/40 bg-slate-50">
+        <NewsletterForm clubId={club.id} primaryColor={primaryColor} />
       </section>
 
       {/* ---------------- SECCIÓN SPONSORS PREMIUM ---------------- */}
