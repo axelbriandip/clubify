@@ -50,6 +50,7 @@ async function main() {
   await prisma.news.deleteMany({ where: { clubId } });
   await prisma.sponsor.deleteMany({ where: { clubId } });
   await prisma.heroImage.deleteMany({ where: { clubId } });
+  await prisma.photoAlbum.deleteMany({ where: { clubId } });
   await prisma.contactSubmission.deleteMany({ where: { clubId } });
   await prisma.newsletterSubscriber.deleteMany({ where: { clubId } });
 
@@ -456,6 +457,59 @@ async function main() {
   });
 
   console.log("✅ Sponsors creados.");
+
+  // 11. Crear Álbumes de Fotos
+  console.log("Cargando álbumes de fotos...");
+  await prisma.photoAlbum.create({
+    data: {
+      clubId,
+      title: "Festejos del Campeonato Clausura",
+      description: "Fotos de la consagración del plantel principal de fútbol masculino y los festejos de los hinchas en el Carminatti.",
+      coverImageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80",
+      sortOrder: 1,
+      isActive: true,
+      photos: {
+        create: [
+          {
+            imageUrl: "https://images.unsplash.com/photo-1518063319789-7217e6706b04?w=800&auto=format&fit=crop&q=80",
+            caption: "Entrega del trofeo al plantel conducido por Diego Simeone.",
+            sortOrder: 1,
+          },
+          {
+            imageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=80",
+            caption: "Festejo de los jugadores en la mitad de la cancha al terminar el clásico.",
+            sortOrder: 2,
+          },
+        ]
+      }
+    }
+  });
+
+  await prisma.photoAlbum.create({
+    data: {
+      clubId,
+      title: "Inauguración de Piso Flotante de Básquet",
+      description: "El acto oficial y el primer entrenamiento de las categorías formativas en el nuevo suelo de parquet del Microestadio.",
+      coverImageUrl: "https://images.unsplash.com/photo-1544698310-74ea9d1c8258?w=800&auto=format&fit=crop&q=80",
+      sortOrder: 2,
+      isActive: true,
+      photos: {
+        create: [
+          {
+            imageUrl: "https://images.unsplash.com/photo-1544698310-74ea9d1c8258?w=800&auto=format&fit=crop&q=80",
+            caption: "Vista general del nuevo parquet del Gimnasio Centenario.",
+            sortOrder: 1,
+          },
+          {
+            imageUrl: "https://images.unsplash.com/photo-1519766304817-4f37bda74a27?w=800&auto=format&fit=crop&q=80",
+            caption: "El plantel de Primera de Básquetbol estrenando la cancha.",
+            sortOrder: 2,
+          }
+        ]
+      }
+    }
+  });
+  console.log("✅ Álbumes de fotos creados.");
 
   // 11. Crear Mensajes de Contacto y Suscriptores mock
   console.log("Cargando mensajes de consulta y correos...");

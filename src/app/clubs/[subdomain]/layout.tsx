@@ -78,7 +78,7 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
           </Link>
 
           {/* Menú de Navegación del Visitante */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:!flex items-center gap-8">
             <Link 
               href={`/`}
               className="font-semibold text-sm text-slate-600 hover:text-[var(--primary-club)] transition-colors"
@@ -104,7 +104,7 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
             <Link
               href={`/apply`}
               style={{ backgroundColor: primaryColor }}
-              className="hidden sm:inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider text-white hover:brightness-110 shadow-lg shadow-[var(--primary-club)]/10 hover:shadow-[var(--primary-club)]/20 hover:scale-103 transition-all"
+              className="hidden sm:!inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider text-white hover:brightness-110 shadow-lg shadow-[var(--primary-club)]/10 hover:shadow-[var(--primary-club)]/20 hover:scale-103 transition-all"
             >
               Hacete Socio
             </Link>
