@@ -4,6 +4,7 @@ import { Outfit, Inter } from "next/font/google";
 import { Mail, Phone, MapPin, Heart, ChevronRight, Award } from "lucide-react";
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
+import AdminFloatingButton from "@/components/AdminFloatingButton";
 
 // Cargamos tipografías de Google Fonts de forma premium
 const outfit = Outfit({
@@ -196,6 +197,7 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
           </p>
         </div>
       </footer>
+      <AdminFloatingButton />
     </div>
   );
 }
