@@ -1,8 +1,9 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { Calendar, Clock, MapPin, Trophy, Newspaper, Heart, Mail, Phone } from "lucide-react";
+import { Calendar, Clock, MapPin, Trophy, Newspaper, ArrowRight } from "lucide-react";
 import MatchesList from "@/components/MatchesList";
+import Link from "next/link";
 
 interface ClubPublicPageProps {
   params: Promise<{ subdomain: string }>;
@@ -27,7 +28,7 @@ async function getClubData(slug: string) {
         take: 3,
       },
       matches: {
-        take: 4,
+        take: 5,
         include: {
           homeTeam: true,
           awayTeam: true,
@@ -47,107 +48,144 @@ export default async function ClubPublicPage({ params }: ClubPublicPageProps) {
   const { subdomain } = await params;
   const club = await getClubData(subdomain);
 
-  // Si el club con ese slug/subdominio no existe en nuestra DB, retornar error 404
   if (!club) {
     return notFound();
   }
 
-  // Paleta de colores configurada por el club
   const primaryColor = club.settings?.primaryColor || "#0284c7";
   const secondaryColor = club.settings?.secondaryColor || "#0f172a";
-  
-  // Agrupar sponsors por jerarquía para la V1 (Jerarquías Pro en el futuro)
-  const platinumSponsors = club.sponsors.filter((s) => s.tier === "PLATINUM");
-  const goldSponsors = club.sponsors.filter((s) => s.tier === "GOLD");
-  const silverSponsors = club.sponsors.filter((s) => s.tier === "SILVER");
 
   return (
     <div 
-      className="bg-white min-h-screen text-slate-800"
+      className="bg-slate-50 text-slate-800"
       style={{
-        // Inyectamos las CSS variables para adaptar los botones y detalles a los colores del club
         "--primary-club": primaryColor,
         "--secondary-club": secondaryColor,
       } as React.CSSProperties}
     >
-      {/* ---------------- SECCIÓN HERO / PORTADA ---------------- */}
-      <section className="relative bg-slate-900 text-white py-24 px-6 overflow-hidden">
-        {/* Imagen de fondo del Hero (Fija la primera imagen activa) */}
+      {/* ---------------- SECCIÓN HERO / PORTADA PREMIUM ---------------- */}
+      <section className="relative min-h-[60vh] flex items-center justify-center py-20 px-6 overflow-hidden">
+        {/* Fondo del Hero */}
         {club.heroImages.length > 0 ? (
-          <div className="absolute inset-0 opacity-40 bg-cover bg-center" style={{ backgroundImage: `url(${club.heroImages[0].imageUrl})` }}></div>
+          <div 
+            className="absolute inset-0 bg-cover bg-center transition-all duration-700" 
+            style={{ backgroundImage: `url(${club.heroImages[0].imageUrl})` }}
+          >
+            {/* Overlay Oscuro con Gradiente para Legibilidad */}
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-slate-950/90"></div>
+          </div>
         ) : (
-          <div className="absolute inset-0 opacity-15 bg-gradient-to-r from-blue-900 to-slate-950"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-950">
+            {/* Patrón de Red para dar textura deportiva */}
+            <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--secondary-club)]/50 to-transparent"></div>
+          </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
 
-        <div className="relative max-w-5xl mx-auto text-center space-y-6 z-10">
-          <span className="text-xs uppercase tracking-widest font-black px-3 py-1.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">
-            Sitio Oficial
-          </span>
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white drop-shadow-md">
+        <div className="relative max-w-4xl w-full mx-auto text-center space-y-8 z-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
+            <span className="h-2 w-2 rounded-full bg-[var(--primary-club)] animate-pulse"></span>
+            <span className="text-[10px] uppercase font-black tracking-widest text-slate-200">
+              Sitio Oficial
+            </span>
+          </div>
+
+          <h1 className="font-outfit font-black text-4xl sm:text-6xl lg:text-7xl uppercase tracking-tight text-white leading-none">
             {club.settings?.heroTitle || `Club Atlético ${club.name}`}
           </h1>
-          <p className="text-base md:text-xl text-slate-300 max-w-2xl mx-auto font-medium drop-shadow">
+
+          <p className="font-sans text-sm sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
             {club.settings?.heroSubtitle || "Bienvenidos al portal de noticias, fixture e información institucional de nuestra comunidad."}
           </p>
+
           {club.settings?.heroCtaText && (
             <div className="pt-4">
-              <a
-                href={club.settings.heroCtaLink || "#"}
-                className="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-extrabold rounded-full text-white bg-[var(--primary-club)] hover:brightness-110 shadow-lg shadow-[var(--primary-club)]/20 transition-all transform hover:-translate-y-0.5"
+              <Link
+                href={`/apply`}
+                style={{ backgroundColor: primaryColor }}
+                className="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-xs font-black uppercase tracking-widest rounded-full text-white hover:brightness-110 shadow-lg shadow-[var(--primary-club)]/30 hover:shadow-[var(--primary-club)]/40 hover:-translate-y-0.5 hover:scale-105 transition-all duration-300"
               >
                 {club.settings.heroCtaText}
-              </a>
+              </Link>
             </div>
           )}
         </div>
       </section>
 
-      {/* ---------------- SECCIÓN CENTRAL: NOTICIAS & FIXTURE ---------------- */}
-      <section className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-3 gap-10">
+      {/* ---------------- SECCIÓN CENTRAL: PRENSA & FIXTURE ---------------- */}
+      <section className="max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 lg:grid-cols-3 gap-12">
         
-        {/* COLUMNA 1 & 2: ÚLTIMAS NOTICIAS (PRENSA) */}
+        {/* COLUMNA DE NOTICIAS (2/3 ancho) */}
         <div className="lg:col-span-2 space-y-8">
-          <h2 className="text-2xl font-black uppercase tracking-wider text-slate-900 flex items-center border-b-2 border-slate-100 pb-3">
-            <Newspaper className="mr-2 text-[var(--primary-club)] h-6 w-6" />
-            Últimas Novedades
-          </h2>
+          <div className="flex justify-between items-end border-b border-slate-200 pb-4">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary-club)]">
+                Novedades de la Institución
+              </span>
+              <h2 className="font-outfit font-black text-2xl uppercase tracking-tight text-slate-900 mt-1 flex items-center">
+                <Newspaper className="mr-2.5 text-[var(--primary-club)] h-6 w-6" />
+                Prensa Oficial
+              </h2>
+            </div>
+            <Link 
+              href={`/news`}
+              className="text-xs font-bold text-[var(--primary-club)] hover:underline inline-flex items-center gap-1"
+            >
+              Ver Todas <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
 
           {club.news.length === 0 ? (
-            <div className="p-8 bg-slate-50 border border-slate-100 rounded-2xl text-center text-slate-400 text-sm">
-              No hay noticias publicadas en este momento.
+            <div className="p-12 bg-white border border-slate-200 rounded-3xl text-center text-slate-400 text-sm shadow-sm">
+              No hay novedades publicadas en este momento.
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {club.news.map((item) => (
-                <div key={item.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-between">
+                <div 
+                  key={item.id} 
+                  className="bg-white border border-slate-200/60 rounded-3xl overflow-hidden shadow-sm hover:shadow-md hover:border-slate-300/80 transition-all duration-300 group flex flex-col justify-between"
+                >
                   <div>
                     {item.imageUrl && (
-                      <div className="h-48 bg-cover bg-center overflow-hidden">
+                      <div className="h-52 bg-cover bg-center overflow-hidden relative">
                         <img 
                           src={item.imageUrl} 
                           alt={item.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                         />
+                        <div className="absolute top-4 left-4">
+                          <span className="text-[9px] uppercase font-black text-[var(--primary-club)] bg-white/95 backdrop-blur px-2.5 py-1 rounded shadow-sm">
+                            {item.category || "General"}
+                          </span>
+                        </div>
                       </div>
                     )}
-                    <div className="p-5 space-y-2">
-                      <span className="text-[10px] uppercase font-bold text-[var(--primary-club)] bg-[var(--primary-club)]/5 px-2 py-0.5 rounded">
-                        {item.category || "Institucional"}
-                      </span>
-                      <h3 className="font-extrabold text-lg text-slate-950 leading-snug group-hover:text-[var(--primary-club)] transition-colors">
+                    <div className="p-6 space-y-2">
+                      {!item.imageUrl && (
+                        <span className="text-[9px] uppercase font-black text-[var(--primary-club)] bg-[var(--primary-club)]/5 px-2 py-0.5 rounded border border-[var(--primary-club)]/10">
+                          {item.category || "General"}
+                        </span>
+                      )}
+                      <h3 className="font-outfit font-black text-lg text-slate-900 leading-snug group-hover:text-[var(--primary-club)] transition-colors line-clamp-2">
                         {item.title}
                       </h3>
-                      <p className="text-xs text-slate-500 line-clamp-3">
+                      <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">
                         {item.summary || item.content}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-5 pt-0 text-right">
-                    <button className="text-xs font-bold text-[var(--primary-club)] hover:underline inline-flex items-center">
-                      Leer Más <ChevronRight className="h-3 w-3 ml-0.5" />
-                    </button>
+                  <div className="p-6 pt-0 border-t border-slate-50/50 mt-4 flex justify-between items-center text-xs">
+                    <span className="text-slate-400 font-medium">
+                      {item.publishedAt ? new Date(item.publishedAt).toLocaleDateString("es-AR") : ""}
+                    </span>
+                    <Link
+                      href={`/news`}
+                      className="font-bold text-[var(--primary-club)] hover:underline inline-flex items-center"
+                    >
+                      Leer Más <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -155,12 +193,17 @@ export default async function ClubPublicPage({ params }: ClubPublicPageProps) {
           )}
         </div>
 
-        {/* COLUMNA 3: FIXTURE & PARTIDOS */}
+        {/* COLUMNA DE FIXTURE (1/3 ancho) */}
         <div className="space-y-8">
-          <h2 className="text-2xl font-black uppercase tracking-wider text-slate-900 flex items-center border-b-2 border-slate-100 pb-3">
-            <Trophy className="mr-2 text-[var(--primary-club)] h-6 w-6" />
-            Agenda Deportiva
-          </h2>
+          <div className="border-b border-slate-200 pb-4">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary-club)]">
+              Agenda y Competencias
+            </span>
+            <h2 className="font-outfit font-black text-2xl uppercase tracking-tight text-slate-900 mt-1 flex items-center">
+              <Trophy className="mr-2.5 text-[var(--primary-club)] h-6 w-6" />
+              Fixture y Partidos
+            </h2>
+          </div>
 
           <MatchesList 
             initialMatches={club.matches} 
@@ -170,22 +213,29 @@ export default async function ClubPublicPage({ params }: ClubPublicPageProps) {
         </div>
       </section>
 
-      {/* ---------------- SECCIÓN: SPONSORS / PATROCINADORES ---------------- */}
+      {/* ---------------- SECCIÓN SPONSORS PREMIUM ---------------- */}
       {club.sponsors.length > 0 && (
-        <section className="bg-slate-50 py-16 border-t border-b border-slate-100">
-          <div className="max-w-7xl mx-auto px-6 space-y-8">
-            <h3 className="text-center text-sm font-bold uppercase tracking-widest text-slate-400">
-              Acompañan nuestra institución
-            </h3>
+        <section className="bg-white py-16 border-t border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-6 space-y-10">
+            <div className="text-center space-y-1">
+              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+                Sponsors Oficiales
+              </span>
+              <h3 className="font-outfit font-black text-xl text-slate-900 uppercase">
+                Acompañan Nuestra Institución
+              </h3>
+            </div>
             
-            {/* Sponsors Grid */}
-            <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+            <div className="flex flex-wrap justify-center items-center gap-10 md:gap-16">
               {club.sponsors.map((sponsor) => (
-                <div key={sponsor.id} className="h-12 md:h-16 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity">
+                <div 
+                  key={sponsor.id} 
+                  className="h-10 md:h-12 flex items-center justify-center opacity-40 hover:opacity-100 transition-all duration-300 transform hover:scale-102"
+                >
                   <img
                     src={sponsor.logoColorUrl}
                     alt={sponsor.name}
-                    className="max-h-full max-w-[150px] object-contain filter grayscale hover:grayscale-0 transition-all"
+                    className="max-h-full max-w-[140px] object-contain"
                   />
                 </div>
               ))}
@@ -193,67 +243,6 @@ export default async function ClubPublicPage({ params }: ClubPublicPageProps) {
           </div>
         </section>
       )}
-
-      {/* ---------------- CONTACTO & PIE DE PÁGINA PÚBLICO ---------------- */}
-      <footer className="bg-slate-950 text-slate-400 py-16 px-6 border-t border-slate-900">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 border-b border-slate-900 pb-10 mb-10">
-          
-          <div className="space-y-4">
-            <h4 className="text-white font-black uppercase text-lg tracking-wider">
-              {club.name}
-            </h4>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              Sitio web oficial de la institución autogenerado bajo la red de Clubify. 
-              Fomentando el deporte y la comunidad.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-white font-bold uppercase text-sm tracking-wider">
-              Contacto Oficial
-            </h4>
-            <ul className="space-y-2.5 text-sm">
-              {club.settings?.contactEmail && (
-                <li className="flex items-center">
-                  <Mail className="h-4 w-4 mr-2 text-[var(--primary-club)]" />
-                  {club.settings.contactEmail}
-                </li>
-              )}
-              {club.settings?.contactPhone && (
-                <li className="flex items-center">
-                  <Phone className="h-4 w-4 mr-2 text-[var(--primary-club)]" />
-                  {club.settings.contactPhone}
-                </li>
-              )}
-              {club.settings?.addressText && (
-                <li className="flex items-center">
-                  <MapPin className="h-4 w-4 mr-2 text-[var(--primary-club)]" />
-                  {club.settings.addressText}
-                </li>
-              )}
-            </ul>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-white font-bold uppercase text-sm tracking-wider">
-              Enlaces de Interés
-            </h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <a href="#" className="hover:text-white transition-colors">Disciplinas</a>
-              <a href="#" className="hover:text-white transition-colors">Fixture</a>
-              <a href="#" className="hover:text-white transition-colors">Prensa</a>
-              <a href="#" className="hover:text-white transition-colors">Socios</a>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-600">
-          <p>© {new Date().getFullYear()} {club.name.toUpperCase()}. Todos los derechos reservados.</p>
-          <p className="flex items-center">
-            Desarrollado con <Heart className="h-3 w-3 mx-1 text-red-500 fill-red-500" /> por Clubify.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
