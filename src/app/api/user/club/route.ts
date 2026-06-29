@@ -67,3 +67,56 @@ export async function GET(request: Request) {
     );
   }
 }
+
+// PUT: Actualizar la configuración visual e institucional (settings) del club
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const {
+      clubId,
+      primaryColor,
+      secondaryColor,
+      fontFamily,
+      heroTitle,
+      heroSubtitle,
+      heroCtaText,
+      heroCtaLink,
+      contactEmail,
+      contactPhone,
+      whatsappNumber,
+      addressText,
+    } = body;
+
+    if (!clubId) {
+      return NextResponse.json(
+        { error: "Falta el ID del club para actualizar la configuración" },
+        { status: 400 }
+      );
+    }
+
+    const updatedSettings = await db.clubSettings.update({
+      where: { clubId: clubId },
+      data: {
+        primaryColor,
+        secondaryColor,
+        fontFamily: fontFamily || "Inter",
+        heroTitle,
+        heroSubtitle,
+        heroCtaText,
+        heroCtaLink,
+        contactEmail,
+        contactPhone,
+        whatsappNumber,
+        addressText,
+      },
+    });
+
+    return NextResponse.json({ success: true, data: updatedSettings });
+  } catch (error: any) {
+    console.error("Error al actualizar la configuración visual del club:", error);
+    return NextResponse.json(
+      { error: "Ocurrió un error interno al intentar guardar los cambios visuales" },
+      { status: 500 }
+    );
+  }
+}
