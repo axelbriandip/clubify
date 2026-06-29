@@ -7,14 +7,15 @@ import {
   Dribbble,
   Users2,
   Calendar,
-  Trash2,
-  CheckCircle2,
-  TrendingUp,
-  Award,
-  ChevronRight,
   Shield,
   Activity,
   PlusCircle,
+  Award,
+  ChevronRight,
+  TrendingUp,
+  MapPin,
+  Clock,
+  Edit2,
 } from "lucide-react";
 
 export default function SportsDashboard() {
@@ -63,7 +64,38 @@ export default function SportsDashboard() {
     playerBio: "",
   });
 
-  // Cargar datos
+  // Estados del Módulo Equipos y Partidos
+  const [teams, setTeams] = useState<any[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [facilities, setFacilities] = useState<any[]>([]);
+  
+  const [showNewTeamModal, setShowNewTeamModal] = useState(false);
+  const [newTeamForm, setNewTeamForm] = useState({
+    name: "",
+    shortName: "",
+    logoColorUrl: "",
+    isOwnClub: false,
+  });
+
+  const [showNewMatchModal, setShowNewMatchModal] = useState(false);
+  const [newMatchForm, setNewMatchForm] = useState({
+    categoryId: "",
+    homeTeamId: "",
+    awayTeamId: "",
+    matchDate: "",
+    matchTime: "",
+    facilityId: "",
+    customLocationName: "",
+    customLocationAddress: "",
+  });
+
+  const [showScoreModal, setShowScoreModal] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<any>(null);
+  const [homeScore, setHomeScore] = useState("");
+  const [awayScore, setAwayScore] = useState("");
+  const [matchSummary, setMatchSummary] = useState("");
+
+  // Cargar datos consolidados
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -76,18 +108,32 @@ export default function SportsDashboard() {
         const activeClub = clubResult.club;
         setClub(activeClub);
 
-        // Cargar Disciplinas
+        // 1. Cargar Disciplinas
         const dispRes = await fetch(`/api/sports?clubId=${activeClub.id}`);
         const dispResult = await dispRes.json();
         if (dispRes.ok && dispResult.success) {
           setDisciplines(dispResult.data);
         }
 
-        // Cargar Personas
+        // 2. Cargar Personas
         const peopRes = await fetch(`/api/people?clubId=${activeClub.id}`);
         const peopResult = await peopRes.json();
         if (peopRes.ok && peopResult.success) {
           setPeople(peopResult.data);
+        }
+
+        // 3. Cargar Equipos
+        const teamRes = await fetch(`/api/teams?clubId=${activeClub.id}`);
+        const teamResult = await teamRes.json();
+        if (teamRes.ok && teamResult.success) {
+          setTeams(teamResult.data);
+        }
+
+        // 4. Cargar Partidos
+        const matchRes = await fetch(`/api/matches?clubId=${activeClub.id}`);
+        const matchResult = await matchRes.json();
+        if (matchRes.ok && matchResult.success) {
+          setMatches(matchResult.data);
         }
       }
     } catch (err) {
@@ -114,7 +160,6 @@ export default function SportsDashboard() {
           clubId: club.id,
           name: newSportName,
           description: newSportDesc,
-          sortOrder: 10,
         }),
       });
       const result = await res.json();
@@ -122,7 +167,7 @@ export default function SportsDashboard() {
         setShowNewSportModal(false);
         setNewSportName("");
         setNewSportDesc("");
-        fetchData(); // Recargar datos
+        fetchData();
       } else {
         alert(result.error || "Error al crear deporte");
       }
@@ -145,7 +190,6 @@ export default function SportsDashboard() {
           name: newCatName,
           ageRange: newCatAge,
           gender: newCatGender,
-          sortOrder: 10,
         }),
       });
       const result = await res.json();
@@ -153,7 +197,7 @@ export default function SportsDashboard() {
         setShowNewCatModal(false);
         setNewCatName("");
         setNewCatAge("");
-        fetchData(); // Recargar datos
+        fetchData();
       } else {
         alert(result.error || "Error al crear categoría");
       }
@@ -166,7 +210,7 @@ export default function SportsDashboard() {
   const handleCreatePerson = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!personForm.firstName || !personForm.lastName || !personForm.dateOfBirth) {
-      alert("Por favor, completa los campos obligatorios (Nombre, Apellido, Nacimiento).");
+      alert("Faltan campos obligatorios.");
       return;
     }
 
@@ -246,6 +290,110 @@ export default function SportsDashboard() {
     }
   };
 
+  // Crear Equipo
+  const handleCreateTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTeamForm.name) return;
+
+    try {
+      const res = await fetch("/api/teams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clubId: club.id,
+          name: newTeamForm.name,
+          shortName: newTeamForm.shortName,
+          isOwnClub: newTeamForm.isOwnClub,
+          logoColorUrl: newTeamForm.logoColorUrl,
+        }),
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setShowNewTeamModal(false);
+        setNewTeamForm({ name: "", shortName: "", logoColorUrl: "", isOwnClub: false });
+        fetchData();
+      } else {
+        alert(result.error || "Error al crear equipo");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Programar Partido
+  const handleCreateMatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { categoryId, homeTeamId, awayTeamId, matchDate, matchTime } = newMatchForm;
+
+    if (!categoryId || !homeTeamId || !awayTeamId || !matchDate) {
+      alert("Por favor, completa los campos requeridos.");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/matches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clubId: club.id,
+          ...newMatchForm,
+        }),
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setShowNewMatchModal(false);
+        setNewMatchForm({
+          categoryId: "",
+          homeTeamId: "",
+          awayTeamId: "",
+          matchDate: "",
+          matchTime: "",
+          facilityId: "",
+          customLocationName: "",
+          customLocationAddress: "",
+        });
+        fetchData();
+      } else {
+        alert(result.error || "Error al programar partido");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Cargar Resultado
+  const handleUpdateScore = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMatch) return;
+
+    try {
+      const res = await fetch("/api/matches", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matchId: selectedMatch.id,
+          homeScore: homeScore === "" ? null : homeScore,
+          awayScore: awayScore === "" ? null : awayScore,
+          status: "FINISHED",
+          matchSummary,
+        }),
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setShowScoreModal(false);
+        setSelectedMatch(null);
+        setHomeScore("");
+        setAwayScore("");
+        setMatchSummary("");
+        fetchData();
+      } else {
+        alert(result.error || "Error al registrar marcador");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading && !club) {
     return (
       <div className="h-96 flex items-center justify-center">
@@ -254,14 +402,19 @@ export default function SportsDashboard() {
     );
   }
 
+  // Agrupar categorías de todos los deportes para cargarlas en selectores
+  const allCategories = disciplines.flatMap((d) =>
+    d.categories.map((c: any) => ({ ...c, disciplineName: d.name }))
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Cabecera del Módulo */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-white">Gestión Deportiva</h1>
           <p className="text-sm text-slate-400">
-            Administra deportes, categorías, planteles y jugadores federados.
+            Administra deportes, categorías, planteles y la agenda de partidos.
           </p>
         </div>
 
@@ -284,6 +437,24 @@ export default function SportsDashboard() {
               <Plus className="h-4 w-4 mr-2" />
               Registrar Persona
             </button>
+          )}
+          {activeTab === "matches" && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowNewTeamModal(true)}
+                className="flex items-center px-4 py-2 bg-slate-800 text-slate-200 border border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Registrar Equipo
+              </button>
+              <button
+                onClick={() => setShowNewMatchModal(true)}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Programar Partido
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -427,7 +598,6 @@ export default function SportsDashboard() {
                     </div>
                   </div>
 
-                  {/* Listado de Categorías de esta disciplina */}
                   <div className="mt-4 space-y-2">
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">
                       Categorías Registradas
@@ -465,108 +635,150 @@ export default function SportsDashboard() {
         </div>
       )}
 
-      {/* ======================= VISTA 3: PARTIDOS Y FIXTURE (PREVIEW) ======================= */}
+      {/* ======================= VISTA 3: PARTIDOS Y FIXTURE (COMPLETO) ======================= */}
       {activeTab === "matches" && (
-        <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl text-center text-slate-500">
-          <Calendar className="h-12 w-12 mx-auto text-slate-700 mb-3" />
-          <p className="text-sm font-bold">Módulo de Fixture y Agenda Deportiva</p>
-          <p className="text-xs mt-1 max-w-sm mx-auto">
-            Este módulo se habilitará en el siguiente paso de la Fase 4 para permitir la carga y programación de partidos.
-          </p>
-        </div>
-      )}
-
-      {/* ======================= MODAL: NUEVO DEPORTE ======================= */}
-      {showNewSportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-850 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 relative">
-            <h3 className="text-lg font-bold text-white mb-4">Agregar Nuevo Deporte</h3>
-            <form onSubmit={handleCreateSport} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre</label>
-                <input
-                  type="text"
-                  required
-                  value={newSportName}
-                  onChange={(e) => setNewSportName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  placeholder="Fútbol Femenino, Básquet, Rugby..."
-                />
+        <div className="space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-lg">
+            {matches.length === 0 ? (
+              <div className="p-8 text-center text-slate-500">
+                <Calendar className="h-12 w-12 mx-auto text-slate-700 mb-3" />
+                <p className="text-sm font-bold">No hay partidos cargados en la agenda.</p>
+                <p className="text-xs mt-1">Crea equipos y agenda un nuevo partido para comenzar.</p>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Descripción (Opcional)</label>
-                <textarea
-                  value={newSportDesc}
-                  onChange={(e) => setNewSportDesc(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 h-20 resize-none"
-                  placeholder="Horarios generales, coordinadores..."
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowNewSportModal(false)}
-                  className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white rounded-lg transition-colors"
-                >
-                  Guardar Deporte
-                </button>
-              </div>
-            </form>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-800 bg-slate-950/40 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    <th className="p-4">Partido</th>
+                    <th className="p-4">Deporte y Categoría</th>
+                    <th className="p-4">Fecha y Hora</th>
+                    <th className="p-4">Lugar</th>
+                    <th className="p-4 text-center">Marcador</th>
+                    <th className="p-4 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800 text-sm">
+                  {matches.map((match) => (
+                    <tr key={match.id} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="p-4 font-bold text-white">
+                        <span className="flex items-center gap-2">
+                          <span className={match.homeTeam.isOwnClub ? "text-blue-400" : ""}>
+                            {match.homeTeam.name}
+                          </span>
+                          <span className="text-slate-500 font-normal text-xs">vs</span>
+                          <span className={match.awayTeam.isOwnClub ? "text-blue-400" : ""}>
+                            {match.awayTeam.name}
+                          </span>
+                        </span>
+                      </td>
+                      <td className="p-4 text-slate-400">
+                        {match.category.discipline.name} - <span className="text-white font-semibold">{match.category.name}</span>
+                      </td>
+                      <td className="p-4 text-slate-400">
+                        <span className="block">{new Date(match.matchDate).toLocaleDateString("es-AR")}</span>
+                        {match.matchTime && (
+                          <span className="text-xs text-slate-500 flex items-center mt-1">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {new Date(match.matchTime).toLocaleTimeString("es-AR", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })} hs
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4 text-slate-400 text-xs">
+                        {match.facility ? (
+                          <span className="flex items-center text-emerald-400 font-medium">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {match.facility.name} (Local)
+                          </span>
+                        ) : (
+                          <span className="flex items-center text-amber-500">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {match.customLocationName || "Por definir"}
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4 text-center">
+                        {match.status === "FINISHED" ? (
+                          <span className="text-base font-black text-white bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">
+                            {match.homeScore} - {match.awayScore}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] bg-blue-950 text-blue-400 border border-blue-900 px-2 py-0.5 rounded font-bold uppercase">
+                            Programado
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-4 text-right">
+                        {match.status !== "FINISHED" && (
+                          <button
+                            onClick={() => {
+                              setSelectedMatch(match);
+                              setHomeScore("");
+                              setAwayScore("");
+                              setShowScoreModal(true);
+                            }}
+                            className="text-xs bg-blue-900/40 text-blue-400 border border-blue-800/50 px-3 py-1 rounded hover:bg-blue-600 hover:text-white transition-colors flex items-center ml-auto"
+                          >
+                            <Edit2 className="h-3 w-3 mr-1.5" />
+                            Cargar Score
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       )}
 
-      {/* ======================= MODAL: NUEVA CATEGORIA ======================= */}
-      {showNewCatModal && (
+      {/* ======================= MODAL: REGISTRAR EQUIPO ======================= */}
+      {showNewTeamModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-855 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 relative">
-            <h3 className="text-lg font-bold text-white mb-4">Agregar Categoría</h3>
-            <form onSubmit={handleCreateCategory} className="space-y-4">
+          <div className="bg-slate-900 border border-slate-850 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 relative">
+            <h3 className="text-lg font-bold text-white mb-4">Registrar Nuevo Equipo</h3>
+            <form onSubmit={handleCreateTeam} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre</label>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre del Equipo</label>
                 <input
                   type="text"
                   required
-                  value={newCatName}
-                  onChange={(e) => setNewCatName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  placeholder="Sub-17, Primera División, Cebollitas..."
+                  value={newTeamForm.name}
+                  onChange={(e) => setNewTeamForm({ ...newTeamForm, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                  placeholder="Club Deportivo Rival, Clubify FC..."
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Rango de Edad</label>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre Corto</label>
                   <input
                     type="text"
-                    value={newCatAge}
-                    onChange={(e) => setNewCatAge(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    placeholder="15-17 años"
+                    value={newTeamForm.shortName}
+                    onChange={(e) => setNewTeamForm({ ...newTeamForm, shortName: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                    placeholder="CDR"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Rama / Género</label>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">¿Es de nuestro Club?</label>
                   <select
-                    value={newCatGender}
-                    onChange={(e) => setNewCatGender(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    value={newTeamForm.isOwnClub ? "true" : "false"}
+                    onChange={(e) => setNewTeamForm({ ...newTeamForm, isOwnClub: e.target.value === "true" })}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
                   >
-                    <option value="MALE">Masculino</option>
-                    <option value="FEMALE">Femenino</option>
-                    <option value="MIXED">Mixto</option>
+                    <option value="false">Rival / Externo</option>
+                    <option value="true">Equipo del Club</option>
                   </select>
                 </div>
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowNewCatModal(false)}
+                  onClick={() => setShowNewTeamModal(false)}
                   className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200"
                 >
                   Cancelar
@@ -575,7 +787,7 @@ export default function SportsDashboard() {
                   type="submit"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white rounded-lg transition-colors"
                 >
-                  Guardar Categoría
+                  Guardar Equipo
                 </button>
               </div>
             </form>
@@ -583,271 +795,117 @@ export default function SportsDashboard() {
         </div>
       )}
 
-      {/* ======================= MODAL: REGISTRAR PERSONA Y ROLES ======================= */}
-      {showNewPersonModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-850 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-white mb-4">Registrar Nueva Persona</h3>
-            
-            <form onSubmit={handleCreatePerson} className="space-y-6">
-              {/* Sección 1: Datos Personales */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-1.5">
-                  1. Ficha Personal (Obligatorio)
-                </h4>
+      {/* ======================= MODAL: PROGRAMAR PARTIDO ======================= */}
+      {showNewMatchModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-850 w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl p-6 relative">
+            <h3 className="text-lg font-bold text-white mb-4">Programar Partido</h3>
+            <form onSubmit={handleCreateMatch} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Categoría del Club</label>
+                <select
+                  required
+                  value={newMatchForm.categoryId}
+                  onChange={(e) => setNewMatchForm({ ...newMatchForm, categoryId: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                >
+                  <option value="">Seleccionar Categoría...</option>
+                  {allCategories.map((cat: any) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.disciplineName} - {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Equipo Local</label>
+                  <select
+                    required
+                    value={newMatchForm.homeTeamId}
+                    onChange={(e) => setNewMatchForm({ ...newMatchForm, homeTeamId: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                  >
+                    <option value="">Seleccionar Local...</option>
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name} {team.isOwnClub ? "(Nosotros)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Equipo Visitante</label>
+                  <select
+                    required
+                    value={newMatchForm.awayTeamId}
+                    onChange={(e) => setNewMatchForm({ ...newMatchForm, awayTeamId: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                  >
+                    <option value="">Seleccionar Visitante...</option>
+                    {teams.map((team) => (
+                      <option key={team.id} value={team.id}>
+                        {team.name} {team.isOwnClub ? "(Nosotros)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Fecha del Partido</label>
+                  <input
+                    type="date"
+                    required
+                    value={newMatchForm.matchDate}
+                    onChange={(e) => setNewMatchForm({ ...newMatchForm, matchDate: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Hora del Partido</label>
+                  <input
+                    type="time"
+                    value={newMatchForm.matchTime}
+                    onChange={(e) => setNewMatchForm({ ...newMatchForm, matchTime: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ubicación del Partido</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Nombre</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Cancha / Estadio Rival</label>
                     <input
                       type="text"
-                      required
-                      value={personForm.firstName}
-                      onChange={(e) => setPersonForm({ ...personForm, firstName: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                      placeholder="Juan"
+                      value={newMatchForm.customLocationName}
+                      onChange={(e) => setNewMatchForm({ ...newMatchForm, customLocationName: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                      placeholder="Estadio Principal, Cancha Auxiliar..."
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Apellido</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Dirección del Estadio</label>
                     <input
                       type="text"
-                      required
-                      value={personForm.lastName}
-                      onChange={(e) => setPersonForm({ ...personForm, lastName: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                      placeholder="Pérez"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Fecha de Nacimiento</label>
-                    <input
-                      type="date"
-                      required
-                      value={personForm.dateOfBirth}
-                      onChange={(e) => setPersonForm({ ...personForm, dateOfBirth: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">DNI / Documento</label>
-                    <input
-                      type="text"
-                      value={personForm.documentId}
-                      onChange={(e) => setPersonForm({ ...personForm, documentId: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                      placeholder="38.123.456"
+                      value={newMatchForm.customLocationAddress}
+                      onChange={(e) => setNewMatchForm({ ...newMatchForm, customLocationAddress: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                      placeholder="Calle Falsa 123, Rosario..."
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Sección 2: Contacto e Interno */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-1.5">
-                  2. Contacto, Emergencia y Carnet
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Email</label>
-                    <input
-                      type="email"
-                      value={personForm.email}
-                      onChange={(e) => setPersonForm({ ...personForm, email: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                      placeholder="juan.perez@gmail.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Teléfono</label>
-                    <input
-                      type="text"
-                      value={personForm.phone}
-                      onChange={(e) => setPersonForm({ ...personForm, phone: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                      placeholder="341-6123456"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Contacto de Emergencia</label>
-                    <input
-                      type="text"
-                      value={personForm.emergencyContactName}
-                      onChange={(e) => setPersonForm({ ...personForm, emergencyContactName: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                      placeholder="María Pérez (Madre)"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Teléfono Emergencia</label>
-                    <input
-                      type="text"
-                      value={personForm.emergencyContactPhone}
-                      onChange={(e) => setPersonForm({ ...personForm, emergencyContactPhone: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                      placeholder="341-6987654"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Vence Apto Médico</label>
-                    <input
-                      type="date"
-                      value={personForm.medicalClearanceExpiry}
-                      onChange={(e) => setPersonForm({ ...personForm, medicalClearanceExpiry: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 uppercase mb-1">Nro Socio (Opcional)</label>
-                    <input
-                      type="text"
-                      value={personForm.memberNumber}
-                      onChange={(e) => setPersonForm({ ...personForm, memberNumber: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
-                      placeholder="S-1209"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Sección 3: Selección de Roles */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-1.5">
-                  3. Roles que cumple en el Club
-                </h4>
-                <div className="flex gap-6">
-                  <label className="flex items-center cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={personForm.isBoardMember}
-                      onChange={(e) => setPersonForm({ ...personForm, isBoardMember: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 rounded bg-slate-950 border-slate-800"
-                    />
-                    <span className="ml-2 text-sm font-semibold text-slate-200">Directivo</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={personForm.isStaffMember}
-                      onChange={(e) => setPersonForm({ ...personForm, isStaffMember: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 rounded bg-slate-950 border-slate-800"
-                    />
-                    <span className="ml-2 text-sm font-semibold text-slate-200">DT / Staff</span>
-                  </label>
-                  <label className="flex items-center cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={personForm.isPlayer}
-                      onChange={(e) => setPersonForm({ ...personForm, isPlayer: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 rounded bg-slate-950 border-slate-800"
-                    />
-                    <span className="ml-2 text-sm font-semibold text-slate-200">Jugador</span>
-                  </label>
-                </div>
-
-                {/* Campos Extra para Directivo */}
-                {personForm.isBoardMember && (
-                  <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
-                    <h5 className="text-xs font-bold text-purple-400 uppercase">Configuración de Directivo</h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cargo</label>
-                        <input
-                          type="text"
-                          value={personForm.boardPosition}
-                          onChange={(e) => setPersonForm({ ...personForm, boardPosition: e.target.value })}
-                          className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 text-white rounded text-xs focus:outline-none"
-                          placeholder="Presidente, Tesorero, Vocal..."
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Campos Extra para Staff */}
-                {personForm.isStaffMember && (
-                  <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
-                    <h5 className="text-xs font-bold text-teal-400 uppercase">Configuración de Staff/Entrenador</h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Rol Principal</label>
-                        <input
-                          type="text"
-                          value={personForm.staffRole}
-                          onChange={(e) => setPersonForm({ ...personForm, staffRole: e.target.value })}
-                          className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 text-white rounded text-xs focus:outline-none"
-                          placeholder="Director Técnico, Preparador Físico..."
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Campos Extra para Jugador */}
-                {personForm.isPlayer && (
-                  <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3 animate-slide-down">
-                    <h5 className="text-xs font-bold text-blue-400 uppercase">Ficha Técnica de Jugador</h5>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Perfil</label>
-                        <select
-                          value={personForm.playerPreferredSide}
-                          onChange={(e) => setPersonForm({ ...personForm, playerPreferredSide: e.target.value })}
-                          className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 text-white rounded text-xs focus:outline-none"
-                        >
-                          <option value="RIGHT">Diestro (Derecha)</option>
-                          <option value="LEFT">Zurdo (Izquierda)</option>
-                          <option value="AMBIDEXTROUS">Ambidiestro</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Altura (cm)</label>
-                        <input
-                          type="number"
-                          value={personForm.playerHeight}
-                          onChange={(e) => setPersonForm({ ...personForm, playerHeight: e.target.value })}
-                          className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 text-white rounded text-xs focus:outline-none"
-                          placeholder="178"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Peso (kg)</label>
-                        <input
-                          type="text"
-                          value={personForm.playerWeight}
-                          onChange={(e) => setPersonForm({ ...personForm, playerWeight: e.target.value })}
-                          className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 text-white rounded text-xs focus:outline-none"
-                          placeholder="74.5"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Procedencia</label>
-                        <input
-                          type="text"
-                          value={personForm.playerPrevClub}
-                          onChange={(e) => setPersonForm({ ...personForm, playerPrevClub: e.target.value })}
-                          className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 text-white rounded text-xs focus:outline-none"
-                          placeholder="Club Libre"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Biografía / Datos Extra</label>
-                      <textarea
-                        value={personForm.playerBio}
-                        onChange={(e) => setPersonForm({ ...personForm, playerBio: e.target.value })}
-                        className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 text-white rounded text-xs focus:outline-none h-16 resize-none"
-                        placeholder="Descripción deportiva..."
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Botones de Envío */}
-              <div className="flex justify-end gap-2 border-t border-slate-850 pt-4">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-850">
                 <button
                   type="button"
-                  onClick={() => setShowNewPersonModal(false)}
+                  onClick={() => setShowNewMatchModal(false)}
                   className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200"
                 >
                   Cancelar
@@ -856,7 +914,83 @@ export default function SportsDashboard() {
                   type="submit"
                   className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white rounded-lg transition-colors"
                 >
-                  Registrar Persona
+                  Programar Partido
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================= MODAL: CARGAR RESULTADO (SCORE) ======================= */}
+      {showScoreModal && selectedMatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-850 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 relative">
+            <h3 className="text-lg font-bold text-white mb-4 text-center">Registrar Marcador</h3>
+            
+            <form onSubmit={handleUpdateScore} className="space-y-4">
+              <div className="text-center font-bold text-white text-sm mb-4">
+                {selectedMatch.homeTeam.name} vs {selectedMatch.awayTeam.name}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-center text-xs font-semibold text-slate-400 uppercase mb-1">
+                    Goles {selectedMatch.homeTeam.name}
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    value={homeScore}
+                    onChange={(e) => setHomeScore(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white text-center rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-center text-xs font-semibold text-slate-400 uppercase mb-1">
+                    Goles {selectedMatch.awayTeam.name}
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    value={awayScore}
+                    onChange={(e) => setAwayScore(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white text-center rounded-lg text-lg font-bold focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Resumen del Partido (Opcional)</label>
+                <textarea
+                  value={matchSummary}
+                  onChange={(e) => setMatchSummary(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 h-24 resize-none"
+                  placeholder="Escribe una crónica o comentario corto del encuentro..."
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowScoreModal(false);
+                    setSelectedMatch(null);
+                  }}
+                  className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white rounded-lg transition-colors"
+                >
+                  Finalizar Partido
                 </button>
               </div>
             </form>
