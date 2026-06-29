@@ -85,9 +85,9 @@ export default function ClubApplyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center">
-        <div className="w-10 h-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-slate-500 text-sm font-semibold">Cargando formulario institucional...</p>
+      <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center text-slate-100">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-slate-400 text-sm font-semibold">Cargando formulario institucional...</p>
       </div>
     );
   }
@@ -97,14 +97,14 @@ export default function ClubApplyPage() {
 
   return (
     <div 
-      className="bg-slate-100 min-h-screen text-slate-800 flex flex-col"
+      className="bg-slate-950 min-h-screen text-slate-100 flex flex-col font-outfit"
       style={{
         "--primary-club": primaryColor,
         "--secondary-club": secondaryColor,
       } as React.CSSProperties}
     >
       {/* Cabecera Superior */}
-      <header className="bg-slate-900 text-white py-8 px-6 border-b border-slate-800">
+      <header className="bg-slate-900 text-white py-8 px-6 border-b border-slate-850">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <Link
             href={`/`}
@@ -112,7 +112,7 @@ export default function ClubApplyPage() {
           >
             <ArrowLeft className="h-4 w-4 mr-1.5" /> Volver a Portada
           </Link>
-          <span className="text-xs bg-slate-800 text-slate-400 font-bold px-3 py-1 rounded-full border border-slate-700">
+          <span className="text-xs bg-slate-950 text-[var(--primary-club)] font-black px-3 py-1 rounded-full border border-slate-850 uppercase tracking-widest">
             {club ? club.name.toUpperCase() : ""}
           </span>
         </div>
@@ -120,24 +120,24 @@ export default function ClubApplyPage() {
 
       {/* Área del Formulario */}
       <main className="flex-grow max-w-2xl w-full mx-auto px-6 py-12">
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-10 shadow-xl space-y-8">
+        <div className="bg-slate-900/60 backdrop-blur border border-slate-850 rounded-3xl p-6 md:p-10 shadow-2xl space-y-8">
           
           {success ? (
             <div className="text-center py-12 space-y-4 animate-fade-in">
-              <div className="h-16 w-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-200">
+              <div className="h-16 w-16 bg-emerald-950/80 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-900/50">
                 <ShieldCheck className="h-10 w-10" />
               </div>
-              <h2 className="text-2xl font-black text-slate-950 uppercase">
+              <h2 className="text-2xl font-black text-white uppercase italic">
                 ¡Solicitud Recibida!
               </h2>
-              <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
+              <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed font-medium">
                 Tu solicitud de preinscripción para asociarte al club fue registrada correctamente en nuestra base de datos.
                 La comisión directiva revisará tu postulación y se contactará contigo vía email para coordinar el cobro y carnet.
               </p>
               <div className="pt-4">
                 <Link
                   href={`/`}
-                  className="px-6 py-2.5 bg-[var(--primary-club)] hover:brightness-110 text-white font-extrabold text-xs rounded-full shadow-md transition-all"
+                  className="px-6 py-2.5 bg-[var(--primary-club)] hover:brightness-110 text-white font-extrabold text-xs rounded-full shadow-md transition-all uppercase tracking-wider"
                 >
                   Volver al Portal
                 </Link>
@@ -147,16 +147,16 @@ export default function ClubApplyPage() {
             <>
               {/* Encabezado */}
               <div className="text-center space-y-2">
-                <h2 className="text-2xl font-black text-slate-950 uppercase tracking-tight">
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight italic">
                   Preinscripción de Socios
                 </h2>
-                <p className="text-slate-500 text-xs max-w-sm mx-auto leading-relaxed">
+                <p className="text-slate-400 text-xs max-w-sm mx-auto leading-relaxed font-medium">
                   Completa el formulario de postulación inicial. El club confirmará tu alta una vez evaluado el cupo.
                 </p>
               </div>
 
               {errorMsg && (
-                <div className="bg-red-50 border border-red-200 text-red-700 p-3.5 rounded-xl text-xs text-center font-semibold">
+                <div className="bg-red-950 border border-red-900 text-red-400 p-3.5 rounded-xl text-xs text-center font-bold">
                   {errorMsg}
                 </div>
               )}
@@ -165,8 +165,8 @@ export default function ClubApplyPage() {
                 
                 {/* 1. Datos del Solicitante */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b border-slate-100 pb-1.5 flex items-center">
-                    <UserCheck className="h-4 w-4 mr-1.5 text-[var(--primary-club)]" />
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b border-slate-850 pb-1.5 flex items-center">
+                    <UserCheck className="h-4.5 w-4.5 mr-1.5 text-[var(--primary-club)]" />
                     Datos Personales
                   </h3>
                   
@@ -178,7 +178,7 @@ export default function ClubApplyPage() {
                         required
                         value={form.firstName}
                         onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:bg-white"
+                        className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
                         placeholder="Martín"
                       />
                     </div>
@@ -189,7 +189,7 @@ export default function ClubApplyPage() {
                         required
                         value={form.lastName}
                         onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:bg-white"
+                        className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
                         placeholder="Gómez"
                       />
                     </div>
@@ -200,7 +200,7 @@ export default function ClubApplyPage() {
                         required
                         value={form.documentId}
                         onChange={(e) => setForm({ ...form, documentId: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:bg-white"
+                        className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
                         placeholder="35.876.543"
                       />
                     </div>
@@ -211,7 +211,7 @@ export default function ClubApplyPage() {
                         required
                         value={form.dateOfBirth}
                         onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:bg-white"
+                        className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
                       />
                     </div>
                   </div>
@@ -219,8 +219,8 @@ export default function ClubApplyPage() {
 
                 {/* 2. Información de Contacto */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b border-slate-100 pb-1.5 flex items-center">
-                    <Mail className="h-4 w-4 mr-1.5 text-[var(--primary-club)]" />
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b border-slate-850 pb-1.5 flex items-center">
+                    <Mail className="h-4.5 w-4.5 mr-1.5 text-[var(--primary-club)]" />
                     Contacto
                   </h3>
                   
@@ -232,7 +232,7 @@ export default function ClubApplyPage() {
                         required
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:bg-white"
+                        className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
                         placeholder="martin.gomez@gmail.com"
                       />
                     </div>
@@ -243,7 +243,7 @@ export default function ClubApplyPage() {
                         required
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:bg-white"
+                        className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
                         placeholder="341-3123456"
                       />
                     </div>
@@ -254,7 +254,7 @@ export default function ClubApplyPage() {
                       type="text"
                       value={form.address}
                       onChange={(e) => setForm({ ...form, address: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:bg-white"
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
                       placeholder="Av. Pellegrini 1200, Rosario"
                     />
                   </div>
@@ -262,8 +262,8 @@ export default function ClubApplyPage() {
 
                 {/* 3. Categoría de Socio */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b border-slate-100 pb-1.5 flex items-center">
-                    <ShieldCheck className="h-4 w-4 mr-1.5 text-[var(--primary-club)]" />
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b border-slate-850 pb-1.5 flex items-center">
+                    <ShieldCheck className="h-4.5 w-4.5 mr-1.5 text-[var(--primary-club)]" />
                     Categoría de Membresía
                   </h3>
                   <div>
@@ -271,7 +271,7 @@ export default function ClubApplyPage() {
                     <select
                       value={form.desiredTier}
                       onChange={(e) => setForm({ ...form, desiredTier: e.target.value })}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:outline-none focus:bg-white"
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-850 rounded-lg text-sm text-white focus:outline-none focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
                     >
                       <option value="Básico">Socio Activo General (Básico)</option>
                       <option value="Socio Grupo Familiar">Socio Familiar (Descuentos Grupo)</option>
@@ -282,11 +282,12 @@ export default function ClubApplyPage() {
                 </div>
 
                 {/* Botón de Enviar */}
-                <div className="pt-4 border-t border-slate-100">
+                <div className="pt-4 border-t border-slate-850">
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-lg text-sm font-extrabold text-white bg-[var(--primary-club)] hover:brightness-110 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    style={{ backgroundColor: primaryColor }}
+                    className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-full shadow-lg text-xs font-extrabold uppercase tracking-wider text-white hover:brightness-110 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                   >
                     {submitting ? "Enviando solicitud..." : "Enviar Postulación"}
                   </button>
