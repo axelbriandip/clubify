@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Users,
-  Dribbble,
+  Trophy,
   Calendar,
   UserPlus,
   ArrowUpRight,
@@ -63,7 +63,7 @@ export default function DashboardPage() {
       value: "0",
       change: "Fase 1",
       changeType: "neutral",
-      icon: Dribbble,
+      icon: Trophy,
       color: "from-amber-600/20 to-amber-900/10 border-amber-900/50",
       iconColor: "text-amber-500",
     },
