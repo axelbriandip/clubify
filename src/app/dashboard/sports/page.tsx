@@ -997,6 +997,422 @@ export default function SportsDashboard() {
           </div>
         </div>
       )}
+
+      {/* ======================= MODAL: CREAR NUEVO DEPORTE ======================= */}
+      {showNewSportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-850 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 relative">
+            <h3 className="text-lg font-bold text-white mb-4">Agregar Nuevo Deporte</h3>
+            <form onSubmit={handleCreateSport} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre del Deporte</label>
+                <input
+                  type="text"
+                  required
+                  value={newSportName}
+                  onChange={(e) => setNewSportName(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                  placeholder="Fútbol, Básquet, Vóley..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Descripción (Opcional)</label>
+                <textarea
+                  value={newSportDesc}
+                  onChange={(e) => setNewSportDesc(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none h-20 resize-none"
+                  placeholder="Disciplina competitiva del club..."
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNewSportModal(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-205"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white rounded-lg transition-colors"
+                >
+                  Guardar Deporte
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================= MODAL: CREAR NUEVA CATEGORÍA ======================= */}
+      {showNewCatModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-850 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 relative">
+            <h3 className="text-lg font-bold text-white mb-4">Añadir Categoría</h3>
+            <form onSubmit={handleCreateCategory} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre de la Categoría</label>
+                <input
+                  type="text"
+                  required
+                  value={newCatName}
+                  onChange={(e) => setNewCatName(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                  placeholder="Primera División, Sub-17, Escuelita..."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Rango de Edad</label>
+                  <input
+                    type="text"
+                    value={newCatAge}
+                    onChange={(e) => setNewCatAge(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                    placeholder="18+ o libre"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Género</label>
+                  <select
+                    value={newCatGender}
+                    onChange={(e) => setNewCatGender(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 text-white rounded-lg text-sm focus:outline-none"
+                  >
+                    <option value="MALE">Masculino</option>
+                    <option value="FEMALE">Femenino</option>
+                    <option value="MIXED">Mixto</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNewCatModal(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-205"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white rounded-lg transition-colors"
+                >
+                  Guardar Categoría
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================= MODAL: REGISTRAR NUEVA PERSONA ======================= */}
+      {showNewPersonModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-850 w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-white mb-4">Registrar Nueva Persona</h3>
+            
+            <form onSubmit={handleCreatePerson} className="space-y-6">
+              
+              {/* Sección 1: Datos Personales Básicos */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 pb-1">1. Datos Personales</h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre *</label>
+                    <input
+                      type="text"
+                      required
+                      value={personForm.firstName}
+                      onChange={(e) => setPersonForm({ ...personForm, firstName: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      placeholder="Juan"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Apellido *</label>
+                    <input
+                      type="text"
+                      required
+                      value={personForm.lastName}
+                      onChange={(e) => setPersonForm({ ...personForm, lastName: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      placeholder="Pérez"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Apodo / Nombre Deportivo</label>
+                    <input
+                      type="text"
+                      value={personForm.nickname}
+                      onChange={(e) => setPersonForm({ ...personForm, nickname: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      placeholder="Juanchi"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">DNI / Documento *</label>
+                    <input
+                      type="text"
+                      required
+                      value={personForm.documentId}
+                      onChange={(e) => setPersonForm({ ...personForm, documentId: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      placeholder="35000111"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">F. Nacimiento *</label>
+                    <input
+                      type="date"
+                      required
+                      value={personForm.dateOfBirth}
+                      onChange={(e) => setPersonForm({ ...personForm, dateOfBirth: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Nacionalidad</label>
+                    <input
+                      type="text"
+                      value={personForm.nationality}
+                      onChange={(e) => setPersonForm({ ...personForm, nationality: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={personForm.email}
+                      onChange={(e) => setPersonForm({ ...personForm, email: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      placeholder="juan@gmail.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Teléfono</label>
+                    <input
+                      type="text"
+                      value={personForm.phone}
+                      onChange={(e) => setPersonForm({ ...personForm, phone: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      placeholder="341-5556677"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Grupo Sanguíneo</label>
+                    <select
+                      value={personForm.bloodType}
+                      onChange={(e) => setPersonForm({ ...personForm, bloodType: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                    >
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">Dirección</label>
+                    <input
+                      type="text"
+                      value={personForm.address}
+                      onChange={(e) => setPersonForm({ ...personForm, address: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      placeholder="Av. Pellegrini 1200, Rosario"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase mb-1">F. Vencimiento Apto Médico</label>
+                    <input
+                      type="date"
+                      value={personForm.medicalClearanceExpiry}
+                      onChange={(e) => setPersonForm({ ...personForm, medicalClearanceExpiry: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Sección 2: Selección de Roles */}
+              <div className="space-y-4 bg-slate-950 p-4 rounded-xl border border-slate-850">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-1">2. Asignar Roles Institucionales / Deportivos</h4>
+                <div className="flex gap-6">
+                  <label className="flex items-center cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={personForm.isPlayer}
+                      onChange={(e) => setPersonForm({ ...personForm, isPlayer: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 rounded bg-slate-900 border-slate-850 focus:ring-0"
+                    />
+                    <span className="ml-2 text-xs font-semibold text-slate-200">Es Jugador/a</span>
+                  </label>
+                  <label className="flex items-center cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={personForm.isStaffMember}
+                      onChange={(e) => setPersonForm({ ...personForm, isStaffMember: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 rounded bg-slate-900 border-slate-855 focus:ring-0"
+                    />
+                    <span className="ml-2 text-xs font-semibold text-slate-200">Es Staff Técnico / Profesor</span>
+                  </label>
+                  <label className="flex items-center cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={personForm.isBoardMember}
+                      onChange={(e) => setPersonForm({ ...personForm, isBoardMember: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 rounded bg-slate-900 border-slate-855 focus:ring-0"
+                    />
+                    <span className="ml-2 text-xs font-semibold text-slate-200">Es Directivo de Comisión</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Sección 3: Datos de Directivo */}
+              {personForm.isBoardMember && (
+                <div className="space-y-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-1">Detalles Directivo</h4>
+                  <div className="max-w-xs">
+                    <label className="block text-xs font-semibold text-slate-350 uppercase mb-1">Cargo Directivo</label>
+                    <input
+                      type="text"
+                      required
+                      value={personForm.boardPosition}
+                      onChange={(e) => setPersonForm({ ...personForm, boardPosition: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      placeholder="Presidente, Secretario, Vocal..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Sección 4: Datos de Staff */}
+              {personForm.isStaffMember && (
+                <div className="space-y-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-1">Detalles Staff / DT</h4>
+                  <div className="max-w-xs">
+                    <label className="block text-xs font-semibold text-slate-350 uppercase mb-1">Función / Puesto</label>
+                    <input
+                      type="text"
+                      required
+                      value={personForm.staffRole}
+                      onChange={(e) => setPersonForm({ ...personForm, staffRole: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      placeholder="Director Técnico, Preparador Físico, Utilero..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Sección 5: Datos de Jugador */}
+              {personForm.isPlayer && (
+                <div className="space-y-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-4">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-1">Ficha Técnica de Jugador/a</h4>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-350 uppercase mb-1">Lateralidad</label>
+                      <select
+                        value={personForm.playerPreferredSide}
+                        onChange={(e) => setPersonForm({ ...personForm, playerPreferredSide: e.target.value })}
+                        className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                      >
+                        <option value="RIGHT">Diestro / Derecho</option>
+                        <option value="LEFT">Zurdo / Izquierdo</option>
+                        <option value="AMBIDEXTROUS">Ambidiestro</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-350 uppercase mb-1">Altura (cm)</label>
+                      <input
+                        type="number"
+                        value={personForm.playerHeight}
+                        onChange={(e) => setPersonForm({ ...personForm, playerHeight: e.target.value })}
+                        className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                        placeholder="180"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-350 uppercase mb-1">Peso (kg)</label>
+                      <input
+                        type="number"
+                        value={personForm.playerWeight}
+                        onChange={(e) => setPersonForm({ ...personForm, playerWeight: e.target.value })}
+                        className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                        placeholder="75"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-350 uppercase mb-1">Club de Procedencia</label>
+                      <input
+                        type="text"
+                        value={personForm.playerPrevClub}
+                        onChange={(e) => setPersonForm({ ...personForm, playerPrevClub: e.target.value })}
+                        className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                        placeholder="Libre, Rosario Central..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-350 uppercase mb-1">Número de Socio Oficial</label>
+                      <input
+                        type="text"
+                        value={personForm.memberNumber}
+                        onChange={(e) => setPersonForm({ ...personForm, memberNumber: e.target.value })}
+                        className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none"
+                        placeholder="SOC-9999"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-350 uppercase mb-1">Breve Biografía / Características</label>
+                    <textarea
+                      value={personForm.playerBio}
+                      onChange={(e) => setPersonForm({ ...personForm, playerBio: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-955 border border-slate-800 text-white rounded-lg text-xs focus:outline-none h-20 resize-none"
+                      placeholder="Mediapunta hábil, con buen regate y definición..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-4 border-t border-slate-850">
+                <button
+                  type="button"
+                  onClick={() => setShowNewPersonModal(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-202"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white rounded-lg transition-colors"
+                >
+                  Guardar Ficha
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
