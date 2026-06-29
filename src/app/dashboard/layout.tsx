@@ -7,7 +7,7 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   Shield,
-  Dribbble,
+  Trophy,
   FileText,
   Users2,
   Settings,
@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const menuItems = [
     { name: "Inicio", href: "/dashboard", icon: LayoutDashboard },
     { name: "Identidad", href: "/dashboard/profile", icon: Shield },
-    { name: "Deportes", href: "/dashboard/sports", icon: Dribbble },
+    { name: "Deportes", href: "/dashboard/sports", icon: Trophy },
     { name: "Prensa", href: "/dashboard/media", icon: FileText },
     { name: "Comunidad", href: "/dashboard/community", icon: Users2 },
     { name: "Configuración", href: "/dashboard/settings", icon: Settings },

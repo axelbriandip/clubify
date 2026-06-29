@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Plus,
-  Dribbble,
+  Trophy,
   Users2,
   Calendar,
   Shield,
@@ -480,7 +480,7 @@ export default function SportsDashboard() {
               : "border-transparent text-slate-400 hover:text-slate-200"
           }`}
         >
-          <Dribbble className="h-4 w-4 mr-2" />
+          <Trophy className="h-4 w-4 mr-2" />
           Deportes y Categorías
         </button>
         <button
@@ -580,7 +580,7 @@ export default function SportsDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {disciplines.length === 0 ? (
             <div className="col-span-2 bg-slate-900 border border-slate-800 p-8 rounded-2xl text-center text-slate-500">
-              <Dribbble className="h-12 w-12 mx-auto text-slate-700 mb-3 animate-pulse" />
+              <Trophy className="h-12 w-12 mx-auto text-slate-700 mb-3 animate-pulse" />
               <p className="text-sm font-bold">No hay deportes configurados.</p>
               <p className="text-xs mt-1">Crea tu primer deporte (ej: Fútbol, Básquet) para organizar a las categorías.</p>
             </div>
@@ -591,7 +591,7 @@ export default function SportsDashboard() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="text-xl font-bold text-white flex items-center">
-                        <Dribbble className="h-5 w-5 mr-2 text-blue-500" />
+                        <Trophy className="h-5 w-5 mr-2 text-blue-500" />
                         {sport.name}
                       </h3>
                       {sport.description && <p className="text-xs text-slate-400 mt-1">{sport.description}</p>}
