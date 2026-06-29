@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         coverImageUrl: coverImageUrl || "https://images.unsplash.com/photo-1544698310-74ea9d1c8258?w=800&auto=format&fit=crop&q=80",
         sortOrder: 1,
         photos: {
-          create: (photos || []).map((p, index) => ({
+          create: (photos || []).map((p: any, index: number) => ({
             imageUrl: p.imageUrl,
             caption: p.caption || "",
             sortOrder: index + 1,
@@ -117,7 +117,7 @@ export async function PUT(request: Request) {
     if (photos) {
       await db.photo.deleteMany({ where: { albumId: id } });
       await db.photo.createMany({
-        data: photos.map((p, index) => ({
+        data: photos.map((p: any, index: number) => ({
           albumId: id,
           imageUrl: p.imageUrl,
           caption: p.caption || "",

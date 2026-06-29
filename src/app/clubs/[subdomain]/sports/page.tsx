@@ -1,7 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { Dribbble, Shield, Award, ArrowLeft, Users, User } from "lucide-react";
+import { Trophy, Shield, Award, ArrowLeft, Users, User } from "lucide-react";
 import Link from "next/link";
 
 interface SportsPageProps {
@@ -99,7 +99,7 @@ export default async function ClubSportsPage({ params }: SportsPageProps) {
               {/* Info Deporte */}
               <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
                 <div className="p-2.5 rounded-xl bg-[var(--primary-club)]/10 text-[var(--primary-club)]">
-                  <Dribbble className="h-6 w-6" />
+                  <Trophy className="h-6 w-6" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-black text-slate-900 uppercase">
