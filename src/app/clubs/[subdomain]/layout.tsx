@@ -45,14 +45,14 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
   const secondaryColor = club.settings?.secondaryColor || "#0f172a";
 
   return (    <div
-      className={`${outfit.variable} ${inter.variable} min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased`}
+      className={`${outfit.variable} ${inter.variable} min-h-screen bg-white text-slate-800 flex flex-col font-sans antialiased`}
       style={{
         "--primary-club": primaryColor,
         "--secondary-club": secondaryColor,
       } as React.CSSProperties}
     >
-      {/* ---------------- BARRA DE NAVEGACIÓN STICKY & GLASSMORPHISM OSCURO ---------------- */}
-      <header className="sticky top-0 z-50 backdrop-blur-lg bg-slate-950/80 border-b border-slate-900/80 shadow-2xl transition-all duration-300">
+      {/* ---------------- BARRA DE NAVEGACIÓN STICKY & GLASSMORPHISM ---------------- */}
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-slate-100 shadow-sm transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           
           {/* Logo / Nombre del Club */}
@@ -62,12 +62,12 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
           >
             <div 
               style={{ backgroundColor: primaryColor }}
-              className="h-10 w-10 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-[var(--primary-club)]/40 group-hover:scale-105 transition-transform"
+              className="h-10 w-10 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-[var(--primary-club)]/20 group-hover:scale-105 transition-transform"
             >
               {club.name.substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <span className="font-outfit font-black text-lg text-white tracking-tight block uppercase leading-none">
+              <span className="font-outfit font-black text-lg text-slate-900 tracking-tight block uppercase leading-none">
                 {club.name}
               </span>
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">
@@ -80,25 +80,25 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
           <nav className="hidden md:!flex items-center gap-8">
             <Link 
               href={`/`}
-              className="font-semibold text-sm text-slate-400 hover:text-white transition-colors"
+              className="font-semibold text-sm text-slate-650 hover:text-[var(--primary-club)] transition-colors"
             >
               Inicio
             </Link>
             <Link 
               href={`/about`}
-              className="font-semibold text-sm text-slate-400 hover:text-white transition-colors"
+              className="font-semibold text-sm text-slate-655 hover:text-[var(--primary-club)] transition-colors"
             >
               Institucional
             </Link>
             <Link 
               href={`/sports`}
-              className="font-semibold text-sm text-slate-400 hover:text-white transition-colors"
+              className="font-semibold text-sm text-slate-655 hover:text-[var(--primary-club)] transition-colors"
             >
               Disciplinas
             </Link>
             <Link 
               href={`/news`}
-              className="font-semibold text-sm text-slate-400 hover:text-white transition-colors"
+              className="font-semibold text-sm text-slate-655 hover:text-[var(--primary-club)] transition-colors"
             >
               Prensa
             </Link>
@@ -109,7 +109,7 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
             <Link
               href={`/apply`}
               style={{ backgroundColor: primaryColor }}
-              className="hidden sm:!inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider text-white hover:brightness-110 shadow-lg shadow-[var(--primary-club)]/20 hover:shadow-[var(--primary-club)]/40 hover:scale-103 transition-all"
+              className="hidden sm:!inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider text-white hover:brightness-110 shadow-lg shadow-[var(--primary-club)]/10 hover:shadow-[var(--primary-club)]/20 hover:scale-103 transition-all"
             >
               Hacete Socio
             </Link>
