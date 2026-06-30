@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Outfit, Inter } from "next/font/google";
+import { Outfit, Inter, Oswald } from "next/font/google";
 import { Mail, Phone, MapPin, Heart, ChevronRight, Award } from "lucide-react";
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
@@ -16,6 +16,12 @@ const outfit = Outfit({
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+const oswald = Oswald({
+  subsets: ["latin"],
+  variable: "--font-oswald",
   display: "swap",
 });
 
@@ -44,15 +50,16 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
   const primaryColor = club.settings?.primaryColor || "#0284c7";
   const secondaryColor = club.settings?.secondaryColor || "#0f172a";
 
-  return (    <div
-      className={`${outfit.variable} ${inter.variable} min-h-screen bg-white text-slate-800 flex flex-col font-sans antialiased`}
+  return (
+    <div
+      className={`${oswald.variable} ${outfit.variable} ${inter.variable} min-h-screen bg-white text-slate-900 flex flex-col font-sans antialiased`}
       style={{
         "--primary-club": primaryColor,
         "--secondary-club": secondaryColor,
       } as React.CSSProperties}
     >
-      {/* ---------------- BARRA DE NAVEGACIÓN STICKY & GLASSMORPHISM ---------------- */}
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-slate-100 shadow-sm transition-all duration-300">
+      {/* ---------------- BARRA DE NAVEGACIÓN STICKY & GLASSMORPHISM BRUTALISTA ---------------- */}
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-white/95 border-b-4 border-slate-900 shadow-md transition-all duration-300">
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           
           {/* Logo / Nombre del Club */}
@@ -62,15 +69,15 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
           >
             <div 
               style={{ backgroundColor: primaryColor }}
-              className="h-10 w-10 rounded-xl flex items-center justify-center text-white font-black shadow-md shadow-[var(--primary-club)]/20 group-hover:scale-105 transition-transform"
+              className="h-10 w-10 border-2 border-slate-900 text-white font-black flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] group-hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all duration-150"
             >
               {club.name.substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <span className="font-outfit font-black text-lg text-slate-900 tracking-tight block uppercase leading-none">
+              <span className="font-oswald font-bold text-xl text-slate-900 tracking-tight block uppercase leading-none">
                 {club.name}
               </span>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">
+              <span className="text-[9px] text-slate-500 font-extrabold uppercase tracking-widest mt-1 block">
                 Portal Oficial
               </span>
             </div>
@@ -80,36 +87,36 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
           <nav className="hidden md:!flex items-center gap-8">
             <Link 
               href={`/`}
-              className="font-semibold text-sm text-slate-650 hover:text-[var(--primary-club)] transition-colors"
+              className="font-oswald font-bold text-sm uppercase text-slate-600 hover:text-[var(--primary-club)] transition-colors"
             >
               Inicio
             </Link>
             <Link 
               href={`/about`}
-              className="font-semibold text-sm text-slate-655 hover:text-[var(--primary-club)] transition-colors"
+              className="font-oswald font-bold text-sm uppercase text-slate-655 hover:text-[var(--primary-club)] transition-colors"
             >
               Institucional
             </Link>
             <Link 
               href={`/sports`}
-              className="font-semibold text-sm text-slate-655 hover:text-[var(--primary-club)] transition-colors"
+              className="font-oswald font-bold text-sm uppercase text-slate-655 hover:text-[var(--primary-club)] transition-colors"
             >
               Disciplinas
             </Link>
             <Link 
               href={`/news`}
-              className="font-semibold text-sm text-slate-655 hover:text-[var(--primary-club)] transition-colors"
+              className="font-oswald font-bold text-sm uppercase text-slate-655 hover:text-[var(--primary-club)] transition-colors"
             >
               Prensa
             </Link>
           </nav>
  
-          {/* Botón de Membresía (CTA) */}
+          {/* Botón de Membresía (CTA Brutalista) */}
           <div className="flex items-center gap-4">
             <Link
               href={`/apply`}
               style={{ backgroundColor: primaryColor }}
-              className="hidden sm:!inline-flex items-center justify-center px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider text-white hover:brightness-110 shadow-lg shadow-[var(--primary-club)]/10 hover:shadow-[var(--primary-club)]/20 hover:scale-103 transition-all"
+              className="hidden sm:!inline-flex items-center justify-center px-6 py-2 border-2 border-slate-900 text-xs font-black uppercase tracking-wider text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all duration-150 cursor-pointer"
             >
               Hacete Socio
             </Link>

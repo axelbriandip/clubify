@@ -97,24 +97,24 @@ export default function ClubApplyPage() {
 
   return (
     <div 
-      className="bg-slate-50 min-h-screen text-slate-800 flex flex-col font-outfit"
+      className="bg-slate-50 min-h-screen text-slate-800 flex flex-col font-sans"
       style={{
         "--primary-club": primaryColor,
         "--secondary-club": secondaryColor,
       } as React.CSSProperties}
     >
       {/* Cabecera Superior */}
-      <header className="bg-slate-900 text-white py-8 px-6 border-b border-slate-800">
-        <div className="absolute inset-0 opacity-30 bg-[var(--primary-club)]"></div>
+      <header className="bg-slate-900 text-white py-8 px-6 border-b-4 border-slate-900">
+        <div className="absolute inset-0 opacity-40 bg-[var(--primary-club)]"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
         <div className="relative max-w-4xl mx-auto flex justify-between items-center z-10">
           <Link
             href={`/`}
-            className="inline-flex items-center text-xs font-bold text-slate-300 hover:text-white transition-colors"
+            className="inline-flex items-center text-xs font-black uppercase font-oswald text-slate-300 hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-1.5" /> Volver a Portada
           </Link>
-          <span className="text-xs bg-slate-950/80 text-white font-extrabold px-3 py-1 rounded-full border border-slate-800">
+          <span className="text-xs bg-slate-950 text-white border-2 border-slate-900 font-black px-3 py-1 uppercase font-oswald tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             {club ? club.name.toUpperCase() : ""}
           </span>
         </div>
@@ -122,24 +122,24 @@ export default function ClubApplyPage() {
 
       {/* Área del Formulario */}
       <main className="flex-grow max-w-2xl w-full mx-auto px-6 py-12">
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-10 shadow-xl space-y-8">
+        <div className="bg-white border-2 border-slate-900 p-6 md:p-10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[8px_8px_0px_0px_var(--primary-club)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all duration-150 space-y-8">
           
           {success ? (
             <div className="text-center py-12 space-y-4 animate-fade-in">
-              <div className="h-16 w-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-200">
+              <div className="h-16 w-16 bg-emerald-100 text-emerald-600 border-2 border-slate-900 flex items-center justify-center mx-auto shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] mb-4">
                 <ShieldCheck className="h-10 w-10" />
               </div>
-              <h2 className="text-2xl font-black text-slate-900 uppercase">
+              <h2 className="text-2xl font-black text-slate-900 uppercase font-oswald italic">
                 ¡Solicitud Recibida!
               </h2>
-              <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed font-medium">
+              <p className="text-slate-500 text-xs max-w-md mx-auto leading-relaxed font-bold font-oswald uppercase">
                 Tu solicitud de preinscripción para asociarte al club fue registrada correctamente en nuestra base de datos.
                 La comisión directiva revisará tu postulación y se contactará contigo vía email para coordinar el cobro y carnet.
               </p>
               <div className="pt-4">
                 <Link
                   href={`/`}
-                  className="px-6 py-2.5 bg-[var(--primary-club)] hover:brightness-110 text-white font-extrabold text-xs rounded-full shadow-md transition-all uppercase tracking-wider"
+                  className="px-8 py-3 bg-[var(--primary-club)] border-2 border-slate-900 text-white font-extrabold text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all uppercase tracking-widest font-oswald"
                 >
                   Volver al Portal
                 </Link>
@@ -149,16 +149,16 @@ export default function ClubApplyPage() {
             <>
               {/* Encabezado */}
               <div className="text-center space-y-2">
-                <h2 className="text-2xl font-black text-slate-950 uppercase tracking-tight">
+                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight font-oswald italic">
                   Preinscripción de Socios
                 </h2>
-                <p className="text-slate-500 text-xs max-w-sm mx-auto leading-relaxed font-medium">
+                <p className="text-slate-500 text-xs max-w-sm mx-auto leading-relaxed font-semibold">
                   Completa el formulario de postulación inicial. El club confirmará tu alta una vez evaluado el cupo.
                 </p>
               </div>
 
               {errorMsg && (
-                <div className="bg-red-50 border border-red-200 text-red-700 p-3.5 rounded-xl text-xs text-center font-bold">
+                <div className="bg-red-50 border-2 border-red-950 text-red-700 p-3.5 text-xs text-center font-black uppercase font-oswald">
                   {errorMsg}
                 </div>
               )}
@@ -167,53 +167,53 @@ export default function ClubApplyPage() {
                 
                 {/* 1. Datos del Solicitante */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b border-slate-100 pb-1.5 flex items-center">
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b-2 border-slate-900 pb-1.5 flex items-center font-oswald">
                     <UserCheck className="h-4.5 w-4.5 mr-1.5 text-[var(--primary-club)]" />
                     Datos Personales
                   </h3>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nombre</label>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 font-oswald">Nombre</label>
                       <input
                         type="text"
                         required
                         value={form.firstName}
                         onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
+                        className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-none text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all"
                         placeholder="Martín"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Apellido</label>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 font-oswald">Apellido</label>
                       <input
                         type="text"
                         required
                         value={form.lastName}
                         onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
+                        className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-none text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all"
                         placeholder="Gómez"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">DNI / Pasaporte</label>
+                      <label className="block text-[10px] font-bold text-slate-505 uppercase mb-1 font-oswald">DNI / Pasaporte</label>
                       <input
                         type="text"
                         required
                         value={form.documentId}
                         onChange={(e) => setForm({ ...form, documentId: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
+                        className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-none text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all"
                         placeholder="35.876.543"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fecha de Nacimiento</label>
+                      <label className="block text-[10px] font-bold text-slate-505 uppercase mb-1 font-oswald">Fecha de Nacimiento</label>
                       <input
                         type="date"
                         required
                         value={form.dateOfBirth}
                         onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
+                        className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-none text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all"
                       />
                     </div>
                   </div>
@@ -221,42 +221,42 @@ export default function ClubApplyPage() {
 
                 {/* 2. Información de Contacto */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b border-slate-100 pb-1.5 flex items-center">
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b-2 border-slate-900 pb-1.5 flex items-center font-oswald">
                     <Mail className="h-4.5 w-4.5 mr-1.5 text-[var(--primary-club)]" />
                     Contacto
                   </h3>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Correo Electrónico</label>
+                      <label className="block text-[10px] font-bold text-slate-505 uppercase mb-1 font-oswald">Correo Electrónico</label>
                       <input
                         type="email"
                         required
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
+                        className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-none text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all"
                         placeholder="martin.gomez@gmail.com"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Teléfono</label>
+                      <label className="block text-[10px] font-bold text-slate-550 uppercase mb-1 font-oswald">Teléfono</label>
                       <input
                         type="text"
                         required
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
+                        className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-none text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all"
                         placeholder="341-3123456"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Dirección de Residencia</label>
+                    <label className="block text-[10px] font-bold text-slate-550 uppercase mb-1 font-oswald">Dirección de Residencia</label>
                     <input
                       type="text"
                       value={form.address}
                       onChange={(e) => setForm({ ...form, address: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
+                      className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-none text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold transition-all"
                       placeholder="Av. Pellegrini 1200, Rosario"
                     />
                   </div>
@@ -264,16 +264,16 @@ export default function ClubApplyPage() {
 
                 {/* 3. Categoría de Socio */}
                 <div className="space-y-4">
-                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b border-slate-100 pb-1.5 flex items-center">
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider border-b-2 border-slate-900 pb-1.5 flex items-center font-oswald">
                     <ShieldCheck className="h-4.5 w-4.5 mr-1.5 text-[var(--primary-club)]" />
                     Categoría de Membresía
                   </h3>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Plan de Socio Deseado</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 font-oswald">Plan de Socio Deseado</label>
                     <select
                       value={form.desiredTier}
                       onChange={(e) => setForm({ ...form, desiredTier: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] focus:ring-1 focus:ring-[var(--primary-club)]"
+                      className="w-full px-3 py-2 bg-slate-50 border-2 border-slate-900 rounded-none text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-[var(--primary-club)] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-bold"
                     >
                       <option value="Básico">Socio Activo General (Básico)</option>
                       <option value="Socio Grupo Familiar">Socio Familiar (Descuentos Grupo)</option>
@@ -284,12 +284,12 @@ export default function ClubApplyPage() {
                 </div>
 
                 {/* Botón de Enviar */}
-                <div className="pt-4 border-t border-slate-100">
+                <div className="pt-4 border-t-2 border-slate-900">
                   <button
                     type="submit"
                     disabled={submitting}
                     style={{ backgroundColor: primaryColor }}
-                    className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-full shadow-lg text-xs font-extrabold uppercase tracking-wider text-white hover:brightness-110 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                    className="w-full flex justify-center py-3.5 px-4 border-2 border-slate-900 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-xs font-black uppercase tracking-wider text-white hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-[0px] active:translate-y-[0px] active:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-150 cursor-pointer font-oswald"
                   >
                     {submitting ? "Enviando solicitud..." : "Enviar Postulación"}
                   </button>
