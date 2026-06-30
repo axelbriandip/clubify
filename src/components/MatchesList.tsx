@@ -33,9 +33,11 @@ export default function MatchesList({ initialMatches, clubSlug, clubName }: Matc
     if (isFinished) {
       message = `¡Resultado del partido de ${clubName}! 🏆\n\n⚽ ${homeName} ${match.homeScore} - ${match.awayScore} ${awayName}\n📅 Fecha: ${matchDate}\n\nMira la crónica completa del encuentro en: ${clubUrl}`;
     } else {
-      const timeString = match.matchTime 
-        ? ` a las ${new Date(match.matchTime).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })} hs`
+      const timeObj = match.matchTime ? new Date(match.matchTime) : null;
+      const timeFormatted = timeObj 
+        ? `${timeObj.getHours().toString().padStart(2, "0")}:${timeObj.getMinutes().toString().padStart(2, "0")}`
         : "";
+      const timeString = timeFormatted ? ` a las ${timeFormatted} hs` : "";
       message = `¡Apoyemos a nuestro club! Próximo partido de ${clubName} 📅\n\n⚔️ ${homeName} vs ${awayName}\n🗓️ Día: ${matchDate}${timeString}\n📍 Lugar: ${match.facility ? match.facility.name : (match.customLocationName || "A definir")}\n\nSigue los detalles del encuentro en: ${clubUrl}`;
     }
 
@@ -123,10 +125,12 @@ export default function MatchesList({ initialMatches, clubSlug, clubName }: Matc
                     {match.matchTime && (
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-1 text-[var(--primary-club)]" />
-                        {new Date(match.matchTime).toLocaleTimeString("es-AR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })} hs
+                        {(() => {
+                          const timeObj = new Date(match.matchTime);
+                          const hh = timeObj.getHours().toString().padStart(2, "0");
+                          const mm = timeObj.getMinutes().toString().padStart(2, "0");
+                          return `${hh}:${mm}`;
+                        })()} hs
                       </div>
                     )}
                     <div className="flex items-center">
