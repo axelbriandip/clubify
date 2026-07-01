@@ -158,7 +158,7 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
                       {disc.categories.map((cat: any) => (
                         <Link 
                           key={cat.id}
-                          href={`/sports#category-${cat.id}`}
+                          href={`/sports/categories/${cat.id}`}
                           className="block text-xs font-semibold text-slate-600 hover:text-[var(--primary-club)] transition-colors"
                         >
                           {cat.name}

@@ -1,7 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { Trophy, Shield, Award, ArrowLeft, Users, User } from "lucide-react";
+import { Trophy, ArrowLeft, Users, ChevronRight, UserCheck, Shield } from "lucide-react";
 import Link from "next/link";
 
 interface SportsPageProps {
@@ -19,22 +19,10 @@ async function getClubSports(slug: string) {
           categories: {
             where: { isActive: true },
             include: {
-              staff: {
-                include: {
-                  staffMember: {
-                    include: {
-                      person: true,
-                    },
-                  },
-                },
-              },
-              players: {
-                include: {
-                  player: {
-                    include: {
-                      person: true,
-                    },
-                  },
+              _count: {
+                select: {
+                  players: true,
+                  staff: true,
                 },
               },
             },
@@ -75,15 +63,15 @@ export default async function ClubSportsPage({ params }: SportsPageProps) {
         <div className="relative max-w-5xl mx-auto space-y-4">
           <Link
             href={`/`}
-            className="inline-flex items-center text-xs font-bold text-slate-350 hover:text-white transition-colors"
+            className="inline-flex items-center text-xs font-bold text-slate-355 hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-1.5" /> Volver al Inicio
           </Link>
           <h1 className="text-3xl md:text-5xl font-outfit font-black uppercase tracking-tight">
-            Disciplinas y Planteles
+            Disciplinas Deportivas
           </h1>
           <p className="text-sm md:text-base text-slate-200 max-w-xl">
-            Conoce los deportes oficiales del club, sus categorías de competición y los planteles federados.
+            Conoce los deportes oficiales de nuestra institución y navega por los planteles de cada categoría.
           </p>
         </div>
       </header>
@@ -96,7 +84,7 @@ export default async function ClubSportsPage({ params }: SportsPageProps) {
           </div>
         ) : (
           club.disciplines.map((discipline) => (
-            <div key={discipline.id} id={`discipline-${discipline.id}`} className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-6 scroll-mt-24">
+            <div key={discipline.id} className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-6">
               
               {/* Info Deporte */}
               <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
@@ -108,108 +96,53 @@ export default async function ClubSportsPage({ params }: SportsPageProps) {
                     {discipline.name}
                   </h2>
                   {discipline.description && (
-                    <p className="text-xs text-slate-500 mt-1">{discipline.description}</p>
+                    <p className="text-xs text-slate-500 mt-1 font-medium">{discipline.description}</p>
                   )}
                 </div>
               </div>
 
-              {/* Categorías de este deporte */}
+              {/* Categorías (Cards de Selección) */}
               {discipline.categories.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No hay categorías cargadas.</p>
+                <p className="text-xs text-slate-400 italic">No hay categorías cargadas para este deporte.</p>
               ) : (
-                <div className="space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   {discipline.categories.map((category) => (
-                    <div key={category.id} id={`category-${category.id}`} className="space-y-4 scroll-mt-24">
-                      
-                      {/* Título de la Categoría */}
-                      <h3 className="text-sm font-outfit font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-[var(--primary-club)]"></span>
-                        {category.name} 
+                    <Link
+                      key={category.id}
+                      href={`/sports/categories/${category.id}`}
+                      className="bg-slate-50/50 border border-slate-150 rounded-2xl p-5 hover:border-[var(--primary-club)]/30 hover:bg-white hover:shadow-md transition-all duration-300 flex flex-col justify-between gap-4 group cursor-pointer"
+                    >
+                      <div className="space-y-2">
+                        <h3 className="text-base font-outfit font-black text-slate-900 uppercase tracking-wide group-hover:text-[var(--primary-club)] transition-colors">
+                          {category.name}
+                        </h3>
                         {category.ageRange && (
-                          <span className="text-xs text-slate-500 font-bold normal-case">
-                            ({category.ageRange})
+                          <span className="text-[10px] bg-slate-200/60 text-slate-600 font-bold px-2 py-0.5 rounded uppercase">
+                            Edad: {category.ageRange}
                           </span>
                         )}
-                      </h3>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         
-                        {/* CUERPO TÉCNICO / STAFF */}
-                        <div className="bg-slate-50 border border-slate-150 rounded-2xl p-4 space-y-3 shadow-inner">
-                          <h4 className="text-xs font-outfit font-black uppercase text-slate-500 tracking-wider flex items-center">
-                            <Shield className="h-4 w-4 mr-1.5 text-teal-605" />
-                            Cuerpo Técnico
-                          </h4>
-                          {category.staff.length === 0 ? (
-                            <p className="text-xs text-slate-400 italic">Sin coordinadores asignados.</p>
-                          ) : (
-                            <ul className="space-y-2.5">
-                              {category.staff.map((s) => (
-                                <li key={s.id} className="flex items-center gap-2 text-xs">
-                                  <div className="p-1 bg-teal-50 text-teal-700 border border-teal-100 rounded shrink-0">
-                                    <User className="h-3.5 w-3.5" />
-                                  </div>
-                                  <div>
-                                    <span className="font-bold text-slate-800">
-                                      {s.staffMember.person.lastName}, {s.staffMember.person.firstName}
-                                    </span>
-                                    <span className="block text-[10px] text-slate-500">
-                                      {s.roleInCategory || s.staffMember.mainRole}
-                                    </span>
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                        {/* Métricas rápidas */}
+                        <div className="pt-2 flex gap-4 text-[10px] text-slate-500 font-bold uppercase">
+                          <span className="flex items-center gap-1">
+                            <UserCheck className="h-3.5 w-3.5 text-slate-400" />
+                            {category._count.players} Jugadores
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Shield className="h-3.5 w-3.5 text-slate-400" />
+                            {category._count.staff} Staff
+                          </span>
                         </div>
-
-                        {/* PLANTEL JUGADORES */}
-                        <div className="md:col-span-2 bg-slate-50 border border-slate-150 rounded-2xl p-4 space-y-3 shadow-inner">
-                          <h4 className="text-xs font-outfit font-black uppercase text-slate-500 tracking-wider flex items-center">
-                            <Users className="h-4 w-4 mr-1.5 text-blue-500" />
-                            Plantel Oficial
-                          </h4>
-                          {category.players.length === 0 ? (
-                            <p className="text-xs text-slate-400 italic">No hay jugadores cargados en la lista.</p>
-                          ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {category.players.map((p) => (
-                                <div 
-                                  key={p.id} 
-                                  className="p-2.5 bg-white border border-slate-150 rounded-xl flex items-center justify-between text-xs hover:border-[var(--primary-club)]/20 transition-colors shadow-sm"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-6 w-6 rounded bg-[var(--primary-club)]/10 flex items-center justify-center font-black text-[var(--primary-club)] text-[10px]">
-                                      {p.jerseyNumber || "-"}
-                                    </div>
-                                    <div>
-                                      <span className="font-bold text-slate-800">
-                                        {p.player.person.lastName}, {p.player.person.firstName}
-                                      </span>
-                                      {p.position && (
-                                        <span className="block text-[10px] text-slate-500">
-                                          {p.position}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {p.player.preferredSide && (
-                                    <span className="text-[9px] bg-slate-50 text-slate-600 border border-slate-150 font-bold px-1.5 py-0.5 rounded">
-                                      {p.player.preferredSide === "LEFT" ? "Z" : p.player.preferredSide === "RIGHT" ? "D" : "A"}
-                                    </span>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
                       </div>
-                    </div>
+
+                      <div className="flex items-center text-xs font-bold text-[var(--primary-club)] uppercase tracking-wider gap-0.5 mt-2">
+                        Ver Plantel <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                    </Link>
                   ))}
                 </div>
               )}
+
             </div>
           ))
         )}
