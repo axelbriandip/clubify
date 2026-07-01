@@ -96,7 +96,7 @@ export default async function ClubSportsPage({ params }: SportsPageProps) {
           </div>
         ) : (
           club.disciplines.map((discipline) => (
-            <div key={discipline.id} className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-6">
+            <div key={discipline.id} id={`discipline-${discipline.id}`} className="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 space-y-6 scroll-mt-24">
               
               {/* Info Deporte */}
               <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
@@ -119,7 +119,7 @@ export default async function ClubSportsPage({ params }: SportsPageProps) {
               ) : (
                 <div className="space-y-8">
                   {discipline.categories.map((category) => (
-                    <div key={category.id} className="space-y-4">
+                    <div key={category.id} id={`category-${category.id}`} className="space-y-4 scroll-mt-24">
                       
                       {/* Título de la Categoría */}
                       <h3 className="text-sm font-outfit font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
