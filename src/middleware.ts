@@ -31,6 +31,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Excluir rutas globales que no corresponden al portal público del club
+  // para que resuelvan directamente en el subdominio (ej: olimpo.localhost:3000/login)
+  const globalPaths = ["/login", "/register", "/dashboard"];
+  const isGlobalPath = globalPaths.some(
+    (p) => url.pathname === p || url.pathname.startsWith(`${p}/`)
+  );
+  if (isGlobalPath) {
+    return NextResponse.next();
+  }
+
   // Evitamos bucles de redirección si por alguna razón la URL interna ya apunta a /clubs
   if (url.pathname.startsWith("/clubs")) {
     return NextResponse.next();

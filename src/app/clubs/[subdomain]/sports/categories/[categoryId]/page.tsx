@@ -32,6 +32,7 @@ async function getCategoryData(categoryId: string, subdomain: string) {
           player: {
             include: { person: true },
           },
+          positionRelation: true, // Cargar la relación a la tabla de posiciones dinámicas
         },
       },
     },
@@ -40,85 +41,25 @@ async function getCategoryData(categoryId: string, subdomain: string) {
   return { club, category };
 }
 
-// Helper para agrupar jugadores dinámicamente según la disciplina y la posición cargada
-function groupPlayersByPosition(players: any[], disciplineSlug: string) {
+// Agrupar jugadores usando estrictamente las posiciones relacionales definidas en la BD
+function groupPlayersByPosition(players: any[]) {
   const groups: { [key: string]: any[] } = {};
-  const slug = (disciplineSlug || "").toLowerCase();
 
   players.forEach((p) => {
-    const rawPos = p.position || "";
-    const pos = rawPos.trim().toLowerCase();
+    const posRel = p.positionRelation;
 
-    // Si no tiene posición definida en la BD
-    if (!pos) {
+    // Fallback si no se asignó posición o relación
+    if (!posRel) {
       if (!groups["Plantel General"]) groups["Plantel General"] = [];
       groups["Plantel General"].push(p);
       return;
     }
 
-    // 1. Fútbol o Futsal
-    if (slug.includes("futbol") || slug.includes("soccer") || slug.includes("futsal")) {
-      if (pos.includes("arquer") || pos.includes("porter") || pos.includes("goalk")) {
-        if (!groups["Arqueros"]) groups["Arqueros"] = [];
-        groups["Arqueros"].push(p);
-      } else if (pos.includes("defen") || pos.includes("zagu") || pos.includes("later") || pos.includes("central") || pos.includes("cierr")) {
-        if (!groups["Defensores / Cierres"]) groups["Defensores / Cierres"] = [];
-        groups["Defensores / Cierres"].push(p);
-      } else if (pos.includes("medio") || pos.includes("volan") || pos.includes("centro") || pos.includes("mcd") || pos.includes("mco") || pos.includes("mc") || pos.includes("ala")) {
-        if (!groups["Mediocampistas / Alas"]) groups["Mediocampistas / Alas"] = [];
-        groups["Mediocampistas / Alas"].push(p);
-      } else if (pos.includes("delan") || pos.includes("extre") || pos.includes("punta") || pos.includes("9") || pos.includes("atac") || pos.includes("piv")) {
-        if (!groups["Delanteros / Pívots"]) groups["Delanteros / Pívots"] = [];
-        groups["Delanteros / Pívots"].push(p);
-      } else {
-        const groupName = rawPos.charAt(0).toUpperCase() + rawPos.slice(1);
-        if (!groups[groupName]) groups[groupName] = [];
-        groups[groupName].push(p);
-      }
+    const groupName = posRel.groupName;
+    if (!groups[groupName]) {
+      groups[groupName] = [];
     }
-    // 2. Básquetbol / Basketball
-    else if (slug.includes("basquet") || slug.includes("basket")) {
-      if (pos.includes("base") || pos.includes("point")) {
-        if (!groups["Bases / Armadores"]) groups["Bases / Armadores"] = [];
-        groups["Bases / Armadores"].push(p);
-      } else if (pos.includes("escolta") || pos.includes("alero") || pos.includes("guard") || pos.includes("forward")) {
-        if (!groups["Escoltas / Aleros"]) groups["Escoltas / Aleros"] = [];
-        groups["Escoltas / Aleros"].push(p);
-      } else if (pos.includes("piv") || pos.includes("center")) {
-        if (!groups["Ala-Pívots / Pívots"]) groups["Ala-Pívots / Pívots"] = [];
-        groups["Ala-Pívots / Pívots"].push(p);
-      } else {
-        const groupName = rawPos.charAt(0).toUpperCase() + rawPos.slice(1);
-        if (!groups[groupName]) groups[groupName] = [];
-        groups[groupName].push(p);
-      }
-    }
-    // 3. Vóleibol / Volleyball
-    else if (slug.includes("voley") || slug.includes("volley")) {
-      if (pos.includes("armad") || pos.includes("sett")) {
-        if (!groups["Armadores"]) groups["Armadores"] = [];
-        groups["Armadores"].push(p);
-      } else if (pos.includes("liber")) {
-        if (!groups["Líberos"]) groups["Líberos"] = [];
-        groups["Líberos"].push(p);
-      } else if (pos.includes("central") || pos.includes("block")) {
-        if (!groups["Centrales"]) groups["Centrales"] = [];
-        groups["Centrales"].push(p);
-      } else if (pos.includes("punta") || pos.includes("opuest") || pos.includes("hitt")) {
-        if (!groups["Puntas / Opuestos"]) groups["Puntas / Opuestos"] = [];
-        groups["Puntas / Opuestos"].push(p);
-      } else {
-        const groupName = rawPos.charAt(0).toUpperCase() + rawPos.slice(1);
-        if (!groups[groupName]) groups[groupName] = [];
-        groups[groupName].push(p);
-      }
-    }
-    // 4. Fallback genérico: Agrupación exacta por el nombre de la posición cargada
-    else {
-      const groupName = rawPos.charAt(0).toUpperCase() + rawPos.slice(1);
-      if (!groups[groupName]) groups[groupName] = [];
-      groups[groupName].push(p);
-    }
+    groups[groupName].push(p);
   });
 
   return groups;
@@ -137,7 +78,7 @@ export default async function ClubCategoryDetailPage({ params }: CategoryPagePro
   const secondaryColor = club.settings?.secondaryColor || "#0f172a";
 
   const allPlayers = category.players || [];
-  const groupedPlayers = groupPlayersByPosition(allPlayers, category.discipline.slug);
+  const groupedPlayers = groupPlayersByPosition(allPlayers);
 
   // Componente de Tarjeta
   const MemberCard = ({ member, isStaff = false }: { member: any; isStaff?: boolean }) => {
@@ -147,9 +88,20 @@ export default async function ClubCategoryDetailPage({ params }: CategoryPagePro
       ? member.staffMember.photoSquareUrl 
       : member.player.photoSquareUrl;
     
-    const roleText = isStaff 
+    // Si es jugador, muestra "Grupo - Nombre Específico" o solo "Nombre Específico"
+    const specificPosition = member.positionRelation?.name;
+    const groupName = member.positionRelation?.groupName;
+    
+    let roleText = isStaff 
       ? (member.roleInCategory || member.staffMember.mainRole) 
-      : member.position;
+      : (specificPosition || member.position || "Jugador");
+
+    // Si tenemos grupo y posición específica que son distintos (ej: Defensores y Lateral Derecho), los mostramos juntos de forma elegante
+    if (!isStaff && groupName && specificPosition && groupName.toUpperCase() !== specificPosition.toUpperCase()) {
+      // Formato: DEFENSOR - LATERAL DERECHO
+      const cleanGroup = groupName.endsWith("s") ? groupName.slice(0, -1) : groupName; // Quitar plural
+      roleText = `${cleanGroup} - ${specificPosition}`;
+    }
 
     return (
       <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:border-[var(--primary-club)]/20 transition-all duration-300 flex flex-col justify-between group">
@@ -184,8 +136,8 @@ export default async function ClubCategoryDetailPage({ params }: CategoryPagePro
               )}
             </div>
             
-            <p className="text-[10px] font-black uppercase text-slate-405 tracking-wider">
-              {roleText || (isStaff ? "Cuerpo Técnico" : "Jugador")}
+            <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+              {roleText}
             </p>
 
             {/* Datos Físicos */}
@@ -264,26 +216,34 @@ export default async function ClubCategoryDetailPage({ params }: CategoryPagePro
             No se han registrado deportistas ni cuerpo técnico en este plantel.
           </div>
         ) : (
-          Object.keys(groupedPlayers).map((groupTitle) => {
-            const list = groupedPlayers[groupTitle];
-            return (
-              <div key={groupTitle} className="space-y-6">
-                <div className="border-b border-slate-200 pb-2 flex items-center justify-between">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">
-                    {groupTitle}
-                  </h3>
-                  <span className="text-[10px] font-black text-[var(--primary-club)] bg-[var(--primary-club)]/5 px-2.5 py-0.5 rounded-full border border-[var(--primary-club)]/10">
-                    {list.length} {list.length === 1 ? "Jugador" : "Jugadores"}
-                  </span>
+          Object.keys(groupedPlayers)
+            .sort((a, b) => {
+              if (a === "Plantel General") return 1; // "Plantel General" va al final
+              if (b === "Plantel General") return -1;
+              const minA = Math.min(...groupedPlayers[a].map((p) => p.positionRelation?.sortOrder ?? 999));
+              const minB = Math.min(...groupedPlayers[b].map((p) => p.positionRelation?.sortOrder ?? 999));
+              return minA - minB;
+            })
+            .map((groupTitle) => {
+              const list = groupedPlayers[groupTitle];
+              return (
+                <div key={groupTitle} className="space-y-6">
+                  <div className="border-b border-slate-200 pb-2 flex items-center justify-between">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">
+                      {groupTitle}
+                    </h3>
+                    <span className="text-[10px] font-black text-[var(--primary-club)] bg-[var(--primary-club)]/5 px-2.5 py-0.5 rounded-full border border-[var(--primary-club)]/10">
+                      {list.length} {list.length === 1 ? "Jugador" : "Jugadores"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                    {list.map((item) => (
+                      <MemberCard key={item.id} member={item} />
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                  {list.map((item) => (
-                    <MemberCard key={item.id} member={item} />
-                  ))}
-                </div>
-              </div>
-            );
-          })
+              );
+            })
         )}
 
       </main>

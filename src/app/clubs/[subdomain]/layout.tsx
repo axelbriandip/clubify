@@ -266,6 +266,10 @@ export default async function ClubLayout({ children, params }: ClubLayoutProps) 
               <Link href={`/apply`} className="hover:text-white transition-colors flex items-center">
                 <ChevronRight className="h-3 w-3 mr-1 text-slate-600" /> Asociarse
               </Link>
+              <div className="border-t border-slate-900/60 my-1 pt-1"></div>
+              <Link href={`/login`} className="hover:text-white text-[var(--primary-club)] font-bold transition-colors flex items-center">
+                <ChevronRight className="h-3 w-3 mr-1 text-slate-600" /> Acceso Dirigentes
+              </Link>
             </div>
           </div>
         </div>

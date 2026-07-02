@@ -309,6 +309,12 @@ model ClubSettings {
   seoMetaDescription String? @map("seo_meta_description") @db.Text
   seoOgImageUrl      String? @map("seo_og_image_url") @db.VarChar(500)
   
+  // Toggles de Visibilidad de Secciones en Historia
+  showHistoryTimeline Boolean @default(true) @map("show_history_timeline")
+  showHistorySymbols  Boolean @default(true) @map("show_history_symbols")
+  showHistoryValues   Boolean @default(true) @map("show_history_values")
+  showHistoryQuote    Boolean @default(true) @map("show_history_quote")
+  
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -519,9 +525,27 @@ model Discipline {
   // Relaciones
   club       Club       @relation(fields: [clubId], references: [id], onDelete: Cascade)
   categories Category[]
+  positions  DisciplinePosition[]
 
   @@unique([clubId, slug])
   @@map("disciplines")
+}
+
+model DisciplinePosition {
+  id           String   @id @default(uuid()) @db.Uuid
+  disciplineId String   @map("discipline_id") @db.Uuid
+  name         String   @db.VarChar(100) // e.g. "Lateral Derecho"
+  groupName    String   @map("group_name") @db.VarChar(100) // e.g. "DEFENSOR", "ARQUERO", "MEDIOCAMPISTA"
+  sortOrder    Int      @default(0) @map("sort_order") @db.Integer
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  discipline       Discipline       @relation(fields: [disciplineId], references: [id], onDelete: Cascade)
+  playerCategories PlayerCategory[]
+
+  @@unique([disciplineId, name])
+  @@map("discipline_positions")
 }
 
 model Category {
@@ -566,12 +590,14 @@ model PlayerCategory {
   categoryId   String               @map("category_id") @db.Uuid
   jerseyNumber Int?                 @map("jersey_number") @db.Integer
   position     String?              @db.VarChar(100)
+  positionId   String?              @map("position_id") @db.Uuid
   status       PlayerCategoryStatus @default(REGULAR_PLAYER)
   createdAt    DateTime             @default(now()) @map("created_at")
 
   // Relaciones
-  player   Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  player           Player              @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  category         Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  positionRelation DisciplinePosition? @relation(fields: [positionId], references: [id], onDelete: SetNull)
 
   @@unique([playerId, categoryId])
   @@map("player_categories")
